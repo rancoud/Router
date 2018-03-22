@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
+use Exception;
 use Closure;
-use InvalidArgumentException;
-
-//use RTools\HTTP\Request;
-//use RTools\HTTP\Response;
 
 /**
  * Class Route.
@@ -18,8 +15,8 @@ class Route
     /** @var array|null */
     protected $methods = null;
     /** @var string|null */
-    protected $uri = null;
-    /** @var Closure|string|null */
+    protected $url = null;
+    /** @var string|null */
     protected $action = null;
     /** @var string|null */
     protected $name = null;
@@ -36,135 +33,14 @@ class Route
      * Route constructor.
      *
      * @param array          $methods
-     * @param string         $uri
+     * @param string         $url
      * @param Closure|string $action
      */
-    public function __construct(array $methods, $uri, $action)
+    public function __construct(array $methods, $url, $action)
     {
         $this->methods = $methods;
-        $this->uri = $uri;
+        $this->uri = $url;
         $this->action = $action;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function get($uri, $action)
-    {
-        $route = new self(['GET', 'HEAD'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function post($uri, $action)
-    {
-        $route = new self(['POST'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function put($uri, $action)
-    {
-        $route = new self(['PUT'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function patch($uri, $action)
-    {
-        $route = new self(['PATCH'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function delete($uri, $action)
-    {
-        $route = new self(['DELETE'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function options($uri, $action)
-    {
-        $route = new self(['OPTIONS'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param array          $methods
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function match(array $methods, $uri, $action)
-    {
-        $route = new self($methods, $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
-    }
-
-    /**
-     * @param string         $uri
-     * @param Closure|string $action
-     *
-     * @return Route
-     */
-    public static function any($uri, $action)
-    {
-        $route = new self(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $uri, $action);
-
-        Router::addRoute($route);
-
-        return $route;
     }
 
     /**
@@ -275,7 +151,7 @@ class Route
         }
 
         if (!is_array($middlewares)) {
-            throw new InvalidArgumentException(get_class($middlewares) . ' is not a valid Middleware Layer.');
+            throw new Exception(get_class($middlewares) . ' is not a valid Middleware Layer.');
         }
 
         $this->middlewares = array_merge($this->middlewares, $middlewares);
