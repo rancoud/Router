@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
-use InvalidArgumentException;
-
-//use RTools\HTTP\Request;
-//use RTools\HTTP\Response;
-
 /**
  * Class Router.
  */
@@ -26,7 +21,7 @@ class Router
     /**
      * @param Route $route
      */
-    public static function addRoute(Route $route)
+    public static function addRoute(Route $route): void
     {
         self::$routes[] = $route;
     }
@@ -35,7 +30,7 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function get(string $url, $callback)
+    public static function get(string $url, $callback): void
     {
         $route = new Route(['GET', 'HEAD'], $url, $callback);
         self::addRoute($route);
@@ -45,7 +40,7 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function post(string $url, $callback)
+    public static function post(string $url, $callback): void
     {
         $route = new Route(['POST'], $url, $callback);
         self::addRoute($route);
@@ -55,7 +50,7 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function put(string $url, $callback)
+    public static function put(string $url, $callback): void
     {
         $route = new Route(['PUT'], $url, $callback);
         self::addRoute($route);
@@ -65,7 +60,7 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function patch(string $url, $callback)
+    public static function patch(string $url, $callback): void
     {
         $route = new Route(['PATCH'], $url, $callback);
         self::addRoute($route);
@@ -75,7 +70,7 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function delete(string $url, $callback)
+    public static function delete(string $url, $callback): void
     {
         $route = new Route(['DELETE'], $url, $callback);
         self::addRoute($route);
@@ -85,7 +80,7 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function options(string $url, $callback)
+    public static function options(string $url, $callback): void
     {
         $route = new Route(['OPTIONS'], $url, $callback);
         self::addRoute($route);
@@ -95,19 +90,27 @@ class Router
      * @param string $url
      * @param        $callback
      */
-    public static function any(string $url, $callback)
+    public static function any(string $url, $callback): void
     {
         $route = new Route(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $url, $callback);
         self::addRoute($route);
     }
 
     /**
-     * @param string $method
-     * @param string $url
+     * @return Route[]
+     */
+    public static function getRoutes(): array
+    {
+        return self::$routes;
+    }
+
+    /*
+     * @param $method
+     * @param $url
      *
      * @return bool
      */
-    public static function findRoute($method, $url)
+    /*public static function findRoute($method, $url)
     {
         self::$method = $method;
         self::$url = self::removeQueryFromUri($url);
@@ -132,14 +135,14 @@ class Router
         }
 
         return false;
-    }
+    }*/
 
-    /**
+    /*
      * @param string $url
      *
      * @return string
      */
-    protected static function removeQueryFromUri($url)
+    /*protected static function removeQueryFromUri($url)
     {
         $queryPathPosition = mb_strpos($url, '?');
 
@@ -148,24 +151,23 @@ class Router
         }
 
         return $url;
-    }
-    
-    
-    /** @var Route[] */
+    }*/
+
+    /* @var Route[] */
     //protected static $routes = [];
-    /** @var Route */
+    /* @var Route */
     //protected static $currentRoute = null;
-    /** @var null */
+    /* @var null */
     //protected static $url = null;
-    /** @var null */
+    /* @var null */
     //protected static $method = null;
-    /** @var array */
+    /* @var array */
     //protected static $middlewares = [];
-    /** @var array */
+    /* @var array */
     //protected static $groupMiddlewares = [];
     //protected static $layers = [];
 
-    /**
+    /*
      * Router constructor.
      *
      * @param array      $layers
@@ -177,7 +179,7 @@ class Router
         static::$currentRoute = $currentRoute;
     }*/
 
-    /**
+    /*
      * @param Route $route
      */
     /*public static function addRoute(Route $route)
@@ -185,7 +187,7 @@ class Router
         self::$routes[] = $route;
     }*/
 
-    /**
+    /*
      * @param string $method
      * @param string $url
      *
@@ -218,7 +220,7 @@ class Router
         return false;
     }*/
 
-    /**
+    /*
      * @return null|Route
      */
     /*public static function currentRoute()
@@ -226,7 +228,7 @@ class Router
         return self::$currentRoute;
     }*/
 
-    /**
+    /*
      * @return null|string
      */
     /*public static function currentRouteName()
@@ -234,7 +236,7 @@ class Router
         return self::$currentRoute->getName();
     }*/
 
-    /**
+    /*
      * @return null|string
      */
     /*public static function currentRouteAction()
@@ -242,7 +244,7 @@ class Router
         return self::$currentRoute->getAction();
     }*/
 
-    /**
+    /*
      * @param string $name
      * @param array  $arguments
      *
@@ -265,7 +267,7 @@ class Router
         return $url;
     }*/
 
-    /**
+    /*
      * @param Middleware|string|array $middlewares
      *
      * @throws \InvalidArgumentException
@@ -287,7 +289,7 @@ class Router
         self::$middlewares = array_merge(self::$middlewares, $middlewares);
     }*/
 
-    /**
+    /*
      * @param string                  $group
      * @param Middleware|string|array $middlewares
      *
@@ -314,7 +316,7 @@ class Router
         self::$groupMiddlewares[$group] = array_merge(self::$groupMiddlewares[$group], $middlewares);
     }*/
 
-    /**
+    /*
      * @param $req
      * @param $res
      *
@@ -336,7 +338,7 @@ class Router
         });
     }*/
 
-    /**
+    /*
      * @param $req
      * @param $res
      * @param $core
@@ -356,7 +358,7 @@ class Router
         return $completePipeline($req, $res);
     }*/
 
-    /**
+    /*
      * @param $core
      *
      * @return mixed
@@ -372,7 +374,7 @@ class Router
         };
     }*/
 
-    /**
+    /*
      * @param Middleware        $nextLayer
      * @param Middleware|string $layer
      *

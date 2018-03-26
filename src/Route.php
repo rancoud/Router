@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
-use Exception;
 use Closure;
+use Exception;
 
 /**
  * Class Route.
@@ -18,113 +18,134 @@ class Route
     protected $url = null;
     /** @var string|null */
     protected $action = null;
-    /** @var string|null */
-    protected $name = null;
     /** @var array */
-    protected $regexes = [];
+    //protected $regexes = [];
     /** @var array */
-    protected $parameters = [];
+    //protected $parameters = [];
     /** @var Middleware[]|string[] */
-    protected $middlewares = [];
+    //protected $middlewares = [];
     /** @var string|null */
-    protected $group = null;
+    //protected $group = null;
 
     /**
      * Route constructor.
      *
-     * @param array          $methods
+     * @param array|string   $methods
      * @param string         $url
      * @param Closure|string $action
+     *
+     * @throws Exception
      */
-    public function __construct(array $methods, $url, $action)
+    public function __construct($methods, string $url, $action)
     {
-        $this->methods = $methods;
-        $this->uri = $url;
+        $this->setMethods($methods);
+        $this->setUrl($url);
+
         $this->action = $action;
     }
 
     /**
-     * @param string $name
+     * @param array|string $methods
      *
-     * @return $this
+     * @throws Exception
      */
-    public function setName($name)
+    protected function setMethods($methods): void
     {
-        $this->name = $name;
+        $validMethods = ['CHECKOUT', 'CONNECT', 'COPY', 'DELETE', 'GET', 'HEAD', 'LINK', 'LOCK', 'M-SEARCH', 'MERGE',
+            'MKACTIVITY', 'MKCALENDAR', 'MKCOL', 'MOVE', 'NOTIFY', 'OPTIONS', 'PATCH', 'POST', 'PROPFIND', 'PROPPATCH',
+            'PURGE', 'PUT', 'REPORT', 'SEARCH', 'SUBSCRIBE', 'TRACE', 'UNLINK', 'UNLOCK', 'UNSUBSCRIBE', 'VIEW'];
 
-        return $this;
+        if (is_string($methods)) {
+            $methods = [$methods];
+        } elseif (!is_array($methods)) {
+            throw new Exception('Method invalid');
+        }
+
+        foreach ($methods as $method) {
+            if (!in_array($method, $validMethods, true)) {
+                throw new Exception('Method invalid: ' . $method);
+            }
+        }
+
+        $this->methods = $methods;
     }
 
     /**
+     * @param string $url
+     *
+     * @throws Exception
+     */
+    protected function setUrl(string $url): void
+    {
+        if (mb_strlen($url) < 1) {
+            throw new Exception('Empty url');
+        }
+
+        $this->url = $url;
+    }
+
+    /*
      * @param array $regexes
      *
      * @return $this
      */
-    public function setRegex(array $regexes)
+    /*public function setRegex(array $regexes)
     {
         $this->regexes = $regexes;
 
         return $this;
-    }
+    }*/
 
-    /**
+    /*
      * @return array|null
      */
-    public function getMethods()
+    /*public function getMethods()
     {
         return $this->methods;
-    }
+    }*/
 
-    /**
+    /*
      * @return null|string
      */
-    public function getUri()
+    /*public function getUri()
     {
-        return $this->uri;
-    }
+        return $this->url;
+    }*/
 
-    /**
+    /*
      * @return Closure|null|string
      */
-    public function getAction()
+    /*public function getAction()
     {
         return $this->action;
-    }
+    }*/
 
-    /**
-     * @return null|string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
+    /*
      * @return array
      */
-    public function getRegex()
+    /*public function getRegex()
     {
         return $this->regexes;
-    }
+    }*/
 
-    /**
+    /*
      * @return string
      */
-    public function compileRegex()
+    /*public function compileRegex()
     {
-        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $this->uri);
+        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $this->url);
 
         foreach ($this->regexes as $id => $pattern) {
             $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $pattern, $regex);
         }
 
         return $regex;
-    }
+    }*/
 
-    /**
+    /*
      * @param $parameters
      */
-    public function setParameters($parameters)
+    /*public function setParameters($parameters)
     {
         foreach ($parameters as $key => $value) {
             if (!is_int($key)) {
@@ -133,14 +154,14 @@ class Route
         }
 
         $this->parameters = $parameters;
-    }
+    }*/
 
-    /**
+    /*
      * @param Middleware|string|array $middlewares
      *
-     * @throws \InvalidArgumentException
+     * @throws Exception
      */
-    public function addMiddlewares($middlewares)
+    /*public function addMiddlewares($middlewares)
     {
         if ($middlewares instanceof Middleware) {
             $middlewares = [$middlewares];
@@ -155,53 +176,53 @@ class Route
         }
 
         $this->middlewares = array_merge($this->middlewares, $middlewares);
-    }
+    }*/
 
-    /**
+    /*
      * @return Middleware[]|\string[]
      */
-    public function getMiddlewares()
+    /*public function getMiddlewares()
     {
         return $this->middlewares;
-    }
+    }*/
 
-    /**
+    /*
      * @return bool
      */
-    public function hasMiddlewares()
+    /*public function hasMiddlewares()
     {
         return !empty($this->middlewares);
-    }
+    }*/
 
-    /**
+    /*
      * @param string $group
      */
-    public function setGroup($group)
+    /*public function setGroup($group)
     {
         $this->group = $group;
-    }
+    }*/
 
-    /**
+    /*
      * @return bool
      */
-    public function hasGroup()
+    /*public function hasGroup()
     {
         return !empty($this->group);
-    }
+    }*/
 
-    /**
+    /*
      * @return null|string
      */
-    public function getGroup()
+    /*public function getGroup()
     {
         return $this->group;
-    }
+    }*/
 
-    /**
+    /*
      * @param $req
      * @param $res
      */
-    public function execute($req, $res)
+    /*public function execute($req, $res)
     {
         $parameters = array_merge([$req, $res], $this->parameters);
 
@@ -214,5 +235,5 @@ class Route
         }
 
         //$res->addBodyContent($html);
-    }
+    }*/
 }
