@@ -16,14 +16,14 @@ class RouteTest extends TestCase
     {
         $route = new Route(['GET', 'POST'], '/', function () {
         });
-        static::assertEquals('Rancoud\Router\Route', get_class($route));
+        static::assertSame('Rancoud\Router\Route', get_class($route));
     }
 
     public function testConstructStringMethods()
     {
         $route = new Route('POST', '/', function () {
         });
-        static::assertEquals('Rancoud\Router\Route', get_class($route));
+        static::assertSame('Rancoud\Router\Route', get_class($route));
     }
 
     public function testConstructException()
@@ -32,35 +32,35 @@ class RouteTest extends TestCase
             new Route('', '/', function () {
             });
         } catch (\Exception $e) {
-            static::assertEquals(\Exception::class, get_class($e));
+            static::assertSame(\Exception::class, get_class($e));
         }
 
         try {
             new Route(false, '/', function () {
             });
         } catch (\Exception $e) {
-            static::assertEquals(\Exception::class, get_class($e));
+            static::assertSame(\Exception::class, get_class($e));
         }
 
         try {
             new Route('method', '/', function () {
             });
         } catch (\Exception $e) {
-            static::assertEquals(\Exception::class, get_class($e));
+            static::assertSame(\Exception::class, get_class($e));
         }
 
         try {
             new Route('get', '/', function () {
             });
         } catch (\Exception $e) {
-            static::assertEquals(\Exception::class, get_class($e));
+            static::assertSame(\Exception::class, get_class($e));
         }
 
         try {
             new Route('GET', '', function () {
             });
         } catch (\Exception $e) {
-            static::assertEquals(\Exception::class, get_class($e));
+            static::assertSame(\Exception::class, get_class($e));
         }
     }
 }

@@ -20,7 +20,7 @@ class RouterTest extends TestCase
     {
         Router::addRoute(new Route('GET', '/', function () {
         }));
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -30,7 +30,7 @@ class RouterTest extends TestCase
     {
         Router::get('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -40,7 +40,7 @@ class RouterTest extends TestCase
     {
         Router::post('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -50,7 +50,7 @@ class RouterTest extends TestCase
     {
         Router::put('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -60,7 +60,7 @@ class RouterTest extends TestCase
     {
         Router::patch('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -70,7 +70,7 @@ class RouterTest extends TestCase
     {
         Router::delete('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -80,7 +80,7 @@ class RouterTest extends TestCase
     {
         Router::options('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 
     /**
@@ -90,6 +90,6 @@ class RouterTest extends TestCase
     {
         Router::any('/', function () {
         });
-        static::assertEquals(1, count(Router::getRoutes()));
+        static::assertSame(1, count(Router::getRoutes()));
     }
 }
