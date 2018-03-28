@@ -104,16 +104,16 @@ class Router
         return self::$routes;
     }
 
-    /*
+    /**
      * @param $method
      * @param $url
      *
      * @return bool
      */
-    /*public static function findRoute($method, $url)
+    public static function findRoute($method, $url)
     {
         self::$method = $method;
-        self::$url = self::removeQueryFromUri($url);
+        self::$url = self::removeQueryFromUrl($url);
 
         foreach (self::$routes as $route) {
             $routeMethod = $route->getMethods();
@@ -126,8 +126,8 @@ class Router
             $matches = [];
 
             if (preg_match($pattern, self::$url, $matches)) {
-                array_shift($matches);
-                $route->setParameters($matches);
+                //array_shift($matches);
+                //$route->setParameters($matches);
                 self::$currentRoute = $route;
 
                 return true;
@@ -135,14 +135,14 @@ class Router
         }
 
         return false;
-    }*/
+    }
 
-    /*
+    /**
      * @param string $url
      *
      * @return string
      */
-    /*protected static function removeQueryFromUri($url)
+    protected static function removeQueryFromUrl($url)
     {
         $queryPathPosition = mb_strpos($url, '?');
 
@@ -151,7 +151,7 @@ class Router
         }
 
         return $url;
-    }*/
+    }
 
     /* @var Route[] */
     //protected static $routes = [];
@@ -196,7 +196,7 @@ class Router
     /*public static function findRoute($method, $url)
     {
         self::$method = $method;
-        self::$url = self::removeQueryFromUri($url);
+        self::$url = self::removeQueryFromUrl($url);
 
         foreach (self::$routes as $route) {
             $routeMethod = $route->getMethods();

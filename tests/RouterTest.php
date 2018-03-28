@@ -92,4 +92,15 @@ class RouterTest extends TestCase
         });
         static::assertSame(1, count(Router::getRoutes()));
     }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testFindRoute()
+    {
+        Router::get('/', function () {
+        });
+        $found = Router::findRoute('GET', '/');
+        static::assertEquals(true, $found);
+    }
 }
