@@ -29,6 +29,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function get(string $url, $callback): void
     {
@@ -39,6 +41,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function post(string $url, $callback): void
     {
@@ -49,6 +53,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function put(string $url, $callback): void
     {
@@ -59,6 +65,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function patch(string $url, $callback): void
     {
@@ -69,6 +77,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function delete(string $url, $callback): void
     {
@@ -79,6 +89,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function options(string $url, $callback): void
     {
@@ -89,6 +101,8 @@ class Router
     /**
      * @param string $url
      * @param        $callback
+     *
+     * @throws \Exception
      */
     public static function any(string $url, $callback): void
     {
@@ -116,9 +130,7 @@ class Router
         self::$url = self::removeQueryFromUrl($url);
 
         foreach (self::$routes as $route) {
-            $routeMethod = $route->getMethods();
-
-            if (!in_array(self::$method, $routeMethod, true)) {
+            if (self::isNotSameRouteMethod($route)) {
                 continue;
             }
 
@@ -126,8 +138,9 @@ class Router
             $matches = [];
 
             if (preg_match($pattern, self::$url, $matches)) {
-                //array_shift($matches);
-                //$route->setParameters($matches);
+                array_shift($matches);
+                self::saveRouteParameters($matches);
+
                 self::$currentRoute = $route;
 
                 return true;
@@ -151,6 +164,25 @@ class Router
         }
 
         return $url;
+    }
+
+    /**
+     * @param Route $route
+     *
+     * @return bool
+     */
+    protected static function isNotSameRouteMethod(Route $route)
+    {
+        return !in_array(self::$method, $route->getMethods(), true);
+    }
+
+    protected static function saveRouteParameters(array $routeParameters)
+    {
+        foreach ($routeParameters as $key => $value) {
+            if (!is_int($key)) {
+                unset($parameters[$key]);
+            }
+        }
     }
 
     /* @var Route[] */

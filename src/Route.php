@@ -84,6 +84,28 @@ class Route
         $this->url = $url;
     }
 
+    /**
+     * @return array|null
+     */
+    public function getMethods()
+    {
+        return $this->methods;
+    }
+
+    /**
+     * @return string
+     */
+    public function compileRegex()
+    {
+        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $this->url);
+
+        /*foreach ($this->regexes as $id => $pattern) {
+            $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $pattern, $regex);
+        }*/
+
+        return $regex;
+    }
+
     /*
      * @param array $regexes
      *

@@ -101,6 +101,22 @@ class RouterTest extends TestCase
         Router::get('/', function () {
         });
         $found = Router::findRoute('GET', '/');
-        static::assertEquals(true, $found);
+        static::assertTrue($found);
+    }
+
+    public function testNotFindRoute()
+    {
+        Router::get('/', function () {
+        });
+        $found = Router::findRoute('GET', '/aze');
+        static::assertFalse($found);
+    }
+
+    public function testFindRouteWithParameters()
+    {
+        Router::get('/{id}', function () {
+        });
+        $found = Router::findRoute('GET', '/aze');
+        static::assertTrue($found);
     }
 }
