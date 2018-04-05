@@ -12,14 +12,14 @@ use Exception;
  */
 class Route
 {
-    /** @var array|null */
-    protected $methods = null;
-    /** @var string|null */
-    protected $url = null;
+    /** @var array */
+    protected $methods = [];
+    /** @var string */
+    protected $url = '';
     /** @var string|null */
     protected $action = null;
     /** @var array */
-    //protected $regexes = [];
+    protected $constraints = [];
     /** @var array */
     //protected $parameters = [];
     /** @var Middleware[]|string[] */
@@ -85,9 +85,9 @@ class Route
     }
 
     /**
-     * @return array|null
+     * @return array
      */
-    public function getMethods()
+    public function getMethods(): array
     {
         return $this->methods;
     }
@@ -95,15 +95,23 @@ class Route
     /**
      * @return string
      */
-    public function compileRegex()
+    public function compileRegex(): string
     {
         $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $this->url);
 
-        /*foreach ($this->regexes as $id => $pattern) {
-            $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $pattern, $regex);
-        }*/
+        foreach ($this->constraints as $id => $regexRule) {
+            $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
+        }
 
         return $regex;
+    }
+
+    /**
+     * @param array $constraints
+     */
+    public function setParametersConstraints(array $constraints): void
+    {
+        $this->constraints = $constraints;
     }
 
     /*

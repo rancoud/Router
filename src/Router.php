@@ -17,6 +17,8 @@ class Router
     protected static $method = null;
     /** @var Route */
     protected static $currentRoute = null;
+    /** @var array */
+    protected static $routeParameters = [];
 
     /**
      * @param Route $route
@@ -124,7 +126,7 @@ class Router
      *
      * @return bool
      */
-    public static function findRoute($method, $url)
+    public static function findRoute($method, $url): bool
     {
         self::$method = $method;
         self::$url = self::removeQueryFromUrl($url);
@@ -155,7 +157,7 @@ class Router
      *
      * @return string
      */
-    protected static function removeQueryFromUrl($url)
+    protected static function removeQueryFromUrl($url): string
     {
         $queryPathPosition = mb_strpos($url, '?');
 
@@ -171,18 +173,31 @@ class Router
      *
      * @return bool
      */
-    protected static function isNotSameRouteMethod(Route $route)
+    protected static function isNotSameRouteMethod(Route $route): bool
     {
         return !in_array(self::$method, $route->getMethods(), true);
     }
 
-    protected static function saveRouteParameters(array $routeParameters)
+    /**
+     * @param array $routeParameters
+     */
+    protected static function saveRouteParameters(array $routeParameters): void
     {
+        self::$routeParameters = [];
+
         foreach ($routeParameters as $key => $value) {
             if (!is_int($key)) {
-                unset($parameters[$key]);
+                self::$routeParameters[$key] = $value;
             }
         }
+    }
+
+    /**
+     * @return array
+     */
+    public static function getRouteParameters(): array
+    {
+        return self::$routeParameters;
     }
 
     /* @var Route[] */
