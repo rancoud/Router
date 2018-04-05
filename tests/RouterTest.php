@@ -158,8 +158,14 @@ class RouterTest extends TestCase
         $found = Router::findRoute('GET', '/articles/fr/199/myslug');
         static::assertFalse($found);
 
+        $ipRegex = '\b(?:(?:25[0-5]|2[0-4][0-9]|1?[1-9][0-9]?|10[0-9])(?:(?<!\.)\b|\.))';
+        $ipRegex .= '(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:(?<!\.)\b|\.)){3}';
         $route = new Route('GET', '/articles/{ip}/{locale}/{year}/{slug}', null);
-        $route->setParametersConstraints(['ip' => '\b(?:(?:25[0-5]|2[0-4][0-9]|1?[1-9][0-9]?|10[0-9])(?:(?<!\.)\b|\.))(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:(?<!\.)\b|\.)){3}', 'locale' => 'fr|en', 'year' => '\d{4}']);
+        $route->setParametersConstraints([
+            'ip'     => $ipRegex,
+            'locale' => 'fr|en',
+            'year'   => '\d{4}'
+        ]);
         Router::addRoute($route);
 
         $found = Router::findRoute('GET', '/articles/192.168.1.1/en/2004/myotherslug?qsa=asq');
@@ -173,15 +179,5 @@ class RouterTest extends TestCase
         static::assertSame('en', $parameters['locale']);
         static::assertSame('2004', $parameters['year']);
         static::assertSame('myotherslug', $parameters['slug']);
-
-        $route = new Route('GET', '/{html_tag}', null);
-        $route->setParametersConstraints(['html_tag' => '\s*?([\d\.]+(\,\d{1,2})?|\,\d{1,2})\s*']);
-        Router::addRoute($route);
-
-        $found = Router::findRoute('GET', '/000,00');
-        static::assertTrue($found);
-        $parameters = Router::getRouteParameters();
-        static::assertTrue(array_key_exists('html_tag', $parameters));
-        static::assertSame('000,00', $parameters['html_tag']);
     }
 }
