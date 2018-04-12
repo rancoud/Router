@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
+use Rancoud\Http\Request;
+use Rancoud\Http\Response;
+
 /**
  * Class Router.
  */
@@ -121,15 +124,17 @@ class Router
     }
 
     /**
-     * @param $method
-     * @param $url
+     * @param string $method
+     * @param string $url
      *
      * @return bool
      */
-    public static function findRoute($method, $url): bool
+    public static function findRoute(string $method, string $url): bool
     {
         self::$method = $method;
         self::$url = self::removeQueryFromUrl($url);
+        self::$currentRoute = null;
+        self::$routeParameters = [];
 
         foreach (self::$routes as $route) {
             if (self::isNotSameRouteMethod($route)) {
@@ -157,7 +162,7 @@ class Router
      *
      * @return string
      */
-    protected static function removeQueryFromUrl($url): string
+    protected static function removeQueryFromUrl(string $url): string
     {
         $queryPathPosition = mb_strpos($url, '?');
 
@@ -198,6 +203,18 @@ class Router
     public static function getRouteParameters(): array
     {
         return self::$routeParameters;
+    }
+
+    public static function dispatch(): void
+    {
+        if (self::$currentRoute === null) {
+            //TODO custom 404
+            return;
+        }
+
+        $request = new Request();
+        $response = new Response();
+        self::$currentRoute->callCallable($request, $response);
     }
 
     /* @var Route[] */

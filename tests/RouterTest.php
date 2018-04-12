@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Rancoud\Router\Test;
 
 use PHPUnit\Framework\TestCase;
+use Rancoud\Http\Request;
+use Rancoud\Http\Response;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 
@@ -117,6 +119,9 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testNotFindRoute()
     {
         Router::get('/', function () {
@@ -125,6 +130,9 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testFindRouteWithParameters()
     {
         Router::get('/{id}', function () {
@@ -136,6 +144,9 @@ class RouterTest extends TestCase
         static::assertSame('aze', $parameters['id']);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testFindRouteWithParametersAndRegexOnIt()
     {
         $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
@@ -179,5 +190,25 @@ class RouterTest extends TestCase
         static::assertSame('en', $parameters['locale']);
         static::assertSame('2004', $parameters['year']);
         static::assertSame('myotherslug', $parameters['slug']);
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testCallable()
+    {
+        Router::get('/', function () {
+            static::assertTrue(true);
+        });
+        Router::findRoute('GET', '/');
+        Router::dispatch();
+
+        Router::get('/{id}', function (Request $req, Response $res) {
+            static::assertTrue(true);
+            //echo $req->getGetParameters('id');
+            //$res->end();
+        });
+        Router::findRoute('GET', '/12');
+        Router::dispatch();
     }
 }

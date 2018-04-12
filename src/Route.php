@@ -6,6 +6,8 @@ namespace Rancoud\Router;
 
 use Closure;
 use Exception;
+use Rancoud\Http\Request;
+use Rancoud\Http\Response;
 
 /**
  * Class Route.
@@ -17,7 +19,7 @@ class Route
     /** @var string */
     protected $url = '';
     /** @var string|null */
-    protected $action = null;
+    protected $callable = null;
     /** @var array */
     protected $constraints = [];
     /** @var array */
@@ -32,16 +34,16 @@ class Route
      *
      * @param array|string   $methods
      * @param string         $url
-     * @param Closure|string $action
+     * @param Closure|string $callable
      *
      * @throws Exception
      */
-    public function __construct($methods, string $url, $action)
+    public function __construct($methods, string $url, $callable)
     {
         $this->setMethods($methods);
         $this->setUrl($url);
 
-        $this->action = $action;
+        $this->callable = $callable;
     }
 
     /**
@@ -112,6 +114,17 @@ class Route
     public function setParametersConstraints(array $constraints): void
     {
         $this->constraints = $constraints;
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     */
+    public function callCallable(Request $request, Response $response)
+    {
+        if ($this->callable instanceof Closure) {
+            call_user_func_array($this->callable, [$request, $response]);
+        }
     }
 
     /*
