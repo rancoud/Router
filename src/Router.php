@@ -6,9 +6,10 @@ namespace Rancoud\Router;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Rancoud\Http\Message\Factory\MessageFactory;
 use Rancoud\Http\Message\Factory\ServerRequestFactory;
-use Rancoud\Http\Message\Response;
 
 /**
  * Class Router.
@@ -16,26 +17,26 @@ use Rancoud\Http\Message\Response;
 class Router implements RequestHandlerInterface
 {
     /** @var Route[] */
-    protected static $routes = [];
+    protected $routes = [];
 
     /** @var null */
-    protected static $url = null;
+    protected $url = null;
 
     /** @var null */
-    protected static $method = null;
+    protected $method = null;
 
     /** @var Route */
-    protected static $currentRoute = null;
+    protected $currentRoute = null;
 
     /** @var array */
-    protected static $routeParameters = [];
+    protected $routeParameters = [];
 
     /**
      * @param Route $route
      */
-    public static function addRoute(Route $route): void
+    public function addRoute(Route $route): void
     {
-        self::$routes[] = $route;
+        $this->routes[] = $route;
     }
 
     /**
@@ -44,10 +45,10 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function get(string $url, $callback): void
+    public function get(string $url, $callback): void
     {
         $route = new Route(['GET', 'HEAD'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
@@ -56,10 +57,10 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function post(string $url, $callback): void
+    public function post(string $url, $callback): void
     {
         $route = new Route(['POST'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
@@ -68,10 +69,10 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function put(string $url, $callback): void
+    public function put(string $url, $callback): void
     {
         $route = new Route(['PUT'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
@@ -80,10 +81,10 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function patch(string $url, $callback): void
+    public function patch(string $url, $callback): void
     {
         $route = new Route(['PATCH'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
@@ -92,10 +93,10 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function delete(string $url, $callback): void
+    public function delete(string $url, $callback): void
     {
         $route = new Route(['DELETE'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
@@ -104,10 +105,10 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function options(string $url, $callback): void
+    public function options(string $url, $callback): void
     {
         $route = new Route(['OPTIONS'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
@@ -116,18 +117,31 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public static function any(string $url, $callback): void
+    public function any(string $url, $callback): void
     {
         $route = new Route(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $url, $callback);
-        self::addRoute($route);
+        $this->addRoute($route);
     }
 
     /**
      * @return Route[]
      */
-    public static function getRoutes(): array
+    public function getRoutes(): array
     {
-        return self::$routes;
+        return $this->routes;
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return bool
+     */
+    public function findRouteRequest(ServerRequestInterface $request): bool
+    {
+        $this->method = $request->getMethod();
+        $this->url = $request->getUri()->getPath();
+
+        return $this->find();
     }
 
     /**
@@ -136,26 +150,35 @@ class Router implements RequestHandlerInterface
      *
      * @return bool
      */
-    public static function findRoute(string $method, string $url): bool
+    public function findRoute(string $method, string $url): bool
     {
-        self::$method = $method;
-        self::$url = self::removeQueryFromUrl($url);
-        self::$currentRoute = null;
-        self::$routeParameters = [];
+        $this->method = $method;
+        $this->url = $this->removeQueryFromUrl($url);
 
-        foreach (self::$routes as $route) {
-            if (self::isNotSameRouteMethod($route)) {
+        return $this->find();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function find(): bool
+    {
+        $this->currentRoute = null;
+        $this->routeParameters = [];
+
+        foreach ($this->routes as $route) {
+            if ($this->isNotSameRouteMethod($route)) {
                 continue;
             }
 
             $pattern = '#^' . $route->compileRegex() . '$#s';
             $matches = [];
 
-            if (preg_match($pattern, self::$url, $matches)) {
+            if (preg_match($pattern, $this->url, $matches)) {
                 array_shift($matches);
-                self::saveRouteParameters($matches);
+                $this->saveRouteParameters($matches);
 
-                self::$currentRoute = $route;
+                $this->currentRoute = $route;
 
                 return true;
             }
@@ -169,7 +192,7 @@ class Router implements RequestHandlerInterface
      *
      * @return string
      */
-    protected static function removeQueryFromUrl(string $url): string
+    protected function removeQueryFromUrl(string $url): string
     {
         $queryPathPosition = mb_strpos($url, '?');
 
@@ -185,21 +208,21 @@ class Router implements RequestHandlerInterface
      *
      * @return bool
      */
-    protected static function isNotSameRouteMethod(Route $route): bool
+    protected function isNotSameRouteMethod(Route $route): bool
     {
-        return !in_array(self::$method, $route->getMethods(), true);
+        return !in_array($this->method, $route->getMethods(), true);
     }
 
     /**
      * @param array $routeParameters
      */
-    protected static function saveRouteParameters(array $routeParameters): void
+    protected function saveRouteParameters(array $routeParameters): void
     {
-        self::$routeParameters = [];
+        $this->routeParameters = [];
 
         foreach ($routeParameters as $key => $value) {
             if (!is_int($key)) {
-                self::$routeParameters[$key] = $value;
+                $this->routeParameters[$key] = $value;
             }
         }
     }
@@ -207,9 +230,9 @@ class Router implements RequestHandlerInterface
     /**
      * @return array
      */
-    public static function getRouteParameters(): array
+    public function getRouteParameters(): array
     {
-        return self::$routeParameters;
+        return $this->routeParameters;
     }
 
     /**
@@ -219,9 +242,9 @@ class Router implements RequestHandlerInterface
      *
      * @return ResponseInterface
      */
-    public static function dispatch(ServerRequestInterface $request = null): ResponseInterface
+    public function dispatch(ServerRequestInterface $request = null): ResponseInterface
     {
-        if (self::$currentRoute === null) {
+        if ($this->currentRoute === null) {
             //TODO custom 404
             return null;
         }
@@ -230,13 +253,13 @@ class Router implements RequestHandlerInterface
             $request = (new ServerRequestFactory())->createServerRequestFromGlobals();
         }
 
-        foreach (self::$routeParameters as $param => $value) {
+        foreach ($this->routeParameters as $param => $value) {
             $request = $request->withAttribute($param, $value);
         }
 
         //compilMiddlewares();
 
-        return (new self())->handle($request);
+        return $this->handle($request);
     }
 
     /**
@@ -252,22 +275,29 @@ class Router implements RequestHandlerInterface
         //    call_user_func_array($this->middleware[0], $request, [$this, 'handle']);
         // if instance of middelware
         //    $middleware->process($request, $this)
-        return Response();
+
+        if (is_callable($this->currentRoute)) {
+            return call_user_func_array($this->currentRoute, [$request, [$this, 'handle']]);
+        } elseif ($this->currentRoute instanceof MiddlewareInterface) {
+            return $this->currentRoute->process($request, $this);
+        }
+
+        return (new MessageFactory())->createResponse();
     }
 
     /* @var Route[] */
-    //protected static $routes = [];
+    //protected $routes = [];
     /* @var Route */
-    //protected static $currentRoute = null;
+    //protected $currentRoute = null;
     /* @var null */
-    //protected static $url = null;
+    //protected $url = null;
     /* @var null */
-    //protected static $method = null;
+    //protected $method = null;
     /* @var array */
-    //protected static $middlewares = [];
+    //protected $middlewares = [];
     /* @var array */
-    //protected static $groupMiddlewares = [];
-    //protected static $layers = [];
+    //protected $groupMiddlewares = [];
+    //protected $layers = [];
 
     /*
      * Router constructor.
@@ -277,16 +307,16 @@ class Router implements RequestHandlerInterface
      */
     /*public function __construct(array $layers = [], Route $currentRoute = null)
     {
-        static::$layers = $layers;
-        static::$currentRoute = $currentRoute;
+        :$layers = $layers;
+        :$currentRoute = $currentRoute;
     }*/
 
     /*
      * @param Route $route
      */
-    /*public static function addRoute(Route $route)
+    /*public function addRoute(Route $route)
     {
-        self::$routes[] = $route;
+        $this->routes[] = $route;
     }*/
 
     /*
@@ -295,25 +325,25 @@ class Router implements RequestHandlerInterface
      *
      * @return bool
      */
-    /*public static function findRoute($method, $url)
+    /*public function findRoute($method, $url)
     {
-        self::$method = $method;
-        self::$url = self::removeQueryFromUrl($url);
+        $this->method = $method;
+        $this->url = $this->removeQueryFromUrl($url);
 
-        foreach (self::$routes as $route) {
+        foreach ($this->routes as $route) {
             $routeMethod = $route->getMethods();
 
-            if (!in_array(self::$method, $routeMethod, true)) {
+            if (!in_array($this->method, $routeMethod, true)) {
                 continue;
             }
 
             $pattern = '#^' . $route->compileRegex() . '$#s';
             $matches = [];
 
-            if (preg_match($pattern, self::$url, $matches)) {
+            if (preg_match($pattern, $this->url, $matches)) {
                 array_shift($matches);
                 $route->setParameters($matches);
-                self::$currentRoute = $route;
+                $this->currentRoute = $route;
 
                 return true;
             }
@@ -325,25 +355,25 @@ class Router implements RequestHandlerInterface
     /*
      * @return null|Route
      */
-    /*public static function currentRoute()
+    /*public function currentRoute()
     {
-        return self::$currentRoute;
+        return $this->currentRoute;
     }*/
 
     /*
      * @return null|string
      */
-    /*public static function currentRouteName()
+    /*public function currentRouteName()
     {
-        return self::$currentRoute->getName();
+        return $this->currentRoute->getName();
     }*/
 
     /*
      * @return null|string
      */
-    /*public static function currentRouteAction()
+    /*public function currentRouteAction()
     {
-        return self::$currentRoute->getAction();
+        return $this->currentRoute->getAction();
     }*/
 
     /*
@@ -352,11 +382,11 @@ class Router implements RequestHandlerInterface
      *
      * @return mixed|null|string
      */
-    /*public static function getUrl($name, $arguments = [])
+    /*public function getUrl($name, $arguments = [])
     {
         $url = '';
 
-        foreach (self::$routes as $route) {
+        foreach ($this->routes as $route) {
             if ($route->getName() === $name) {
                 $url = $route->getUri();
                 foreach ($arguments as $key => $value) {
@@ -374,7 +404,7 @@ class Router implements RequestHandlerInterface
      *
      * @throws \InvalidArgumentException
      */
-    /*public static function addMiddlewares($middlewares)
+    /*public function addMiddlewares($middlewares)
     {
         if ($middlewares instanceof Middleware) {
             $middlewares = [$middlewares];
@@ -388,7 +418,7 @@ class Router implements RequestHandlerInterface
             throw new InvalidArgumentException(get_class($middlewares) . ' is not a valid Middleware Layer.');
         }
 
-        self::$middlewares = array_merge(self::$middlewares, $middlewares);
+        $this->middlewares = array_merge($this->middlewares, $middlewares);
     }*/
 
     /*
@@ -397,7 +427,7 @@ class Router implements RequestHandlerInterface
      *
      * @throws \InvalidArgumentException
      */
-    /*public static function addMiddlewaresToGroup($group, $middlewares)
+    /*public function addMiddlewaresToGroup($group, $middlewares)
     {
         if ($middlewares instanceof Middleware) {
             $middlewares = [$middlewares];
@@ -411,11 +441,11 @@ class Router implements RequestHandlerInterface
             throw new InvalidArgumentException(get_class($middlewares) . ' is not a valid Middleware Layer.');
         }
 
-        if (!array_key_exists($group, self::$groupMiddlewares)) {
-            self::$groupMiddlewares[$group] = [];
+        if (!array_key_exists($group, $this->groupMiddlewares)) {
+            $this->groupMiddlewares[$group] = [];
         }
 
-        self::$groupMiddlewares[$group] = array_merge(self::$groupMiddlewares[$group], $middlewares);
+        $this->groupMiddlewares[$group] = array_merge($this->groupMiddlewares[$group], $middlewares);
     }*/
 
     /*
@@ -424,16 +454,16 @@ class Router implements RequestHandlerInterface
      *
      * @return mixed
      */
-    /*public static function execute($req, $res)
+    /*public function execute($req, $res)
     {
-        self::completeMiddlewares();
+        $this->completeMiddlewares();
 
-        if (empty(self::$middlewares)) {
-            self::$currentRoute->execute($req, $res);
+        if (empty($this->middlewares)) {
+            $this->currentRoute->execute($req, $res);
 
             return $res;
         }
-        $layers = new static(self::$middlewares, self::$currentRoute);
+        $layers = new $this->middlewares, $this->currentRoute);
 
         return $layers::next($req, $res, function ($req, $res) {
             return $res;
@@ -447,11 +477,11 @@ class Router implements RequestHandlerInterface
      *
      * @return mixed
      */
-    /*public static function next($req, $res, $core)
+    /*public function next($req, $res, $core)
     {
-        $coreFunction = self::createCoreFunction($core);
+        $coreFunction = $this->createCoreFunction($core);
 
-        $layers = array_reverse(self::$layers);
+        $layers = array_reverse($this->layers);
 
         $completePipeline = array_reduce($layers, function ($nextLayer, $layer) {
             return Router::createLayer($nextLayer, $layer);
@@ -465,9 +495,9 @@ class Router implements RequestHandlerInterface
      *
      * @return mixed
      */
-    /*private static function createCoreFunction($core)
+    /*private function createCoreFunction($core)
     {
-        $currentRoute = self::$currentRoute;
+        $currentRoute = $this->currentRoute;
 
         return function ($req, $res) use ($core, $currentRoute) {
             $currentRoute->execute($req, $res);
@@ -482,7 +512,7 @@ class Router implements RequestHandlerInterface
      *
      * @return mixed
      */
-    /*public static function createLayer($nextLayer, $layer)
+    /*public function createLayer($nextLayer, $layer)
     {
         if (is_string($layer)) {
             $layer = new $layer();
@@ -493,17 +523,17 @@ class Router implements RequestHandlerInterface
         };
     }*/
 
-    /*protected static function completeMiddlewares()
+    /*protected function completeMiddlewares()
     {
-        if (self::$currentRoute->hasGroup()) {
-            $group = self::$currentRoute->getGroup();
-            if (array_key_exists($group, self::$groupMiddlewares)) {
-                self::addMiddlewares(self::$groupMiddlewares[$group]);
+        if ($this->currentRoute->hasGroup()) {
+            $group = $this->currentRoute->getGroup();
+            if (array_key_exists($group, $this->groupMiddlewares)) {
+                $this->addMiddlewares($this->groupMiddlewares[$group]);
             }
         }
 
-        if (self::$currentRoute->hasMiddlewares()) {
-            self::addMiddlewares(self::$currentRoute->getMiddlewares());
+        if ($this->currentRoute->hasMiddlewares()) {
+            $this->addMiddlewares($this->currentRoute->getMiddlewares());
         }
     }*/
 }
