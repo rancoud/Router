@@ -6,8 +6,7 @@ namespace Rancoud\Router;
 
 use Closure;
 use Exception;
-use Rancoud\Http\Request;
-use Rancoud\Http\Response;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * Class Route.
@@ -16,15 +15,19 @@ class Route
 {
     /** @var array */
     protected $methods = [];
+
     /** @var string */
     protected $url = '';
+
     /** @var string|null */
     protected $callable = null;
+
     /** @var array */
     protected $constraints = [];
+
     /** @var array */
     //protected $parameters = [];
-    /** @var Middleware[]|string[] */
+    /** @var MiddlewareInterface[]|string[] */
     //protected $middlewares = [];
     /** @var string|null */
     //protected $group = null;
@@ -114,17 +117,6 @@ class Route
     public function setParametersConstraints(array $constraints): void
     {
         $this->constraints = $constraints;
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     */
-    public function callCallable(Request $request, Response $response)
-    {
-        if ($this->callable instanceof Closure) {
-            call_user_func_array($this->callable, [$request, $response]);
-        }
     }
 
     /*

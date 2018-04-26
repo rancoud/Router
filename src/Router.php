@@ -4,22 +4,29 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
-use Rancoud\Http\Request;
-use Rancoud\Http\Response;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Rancoud\Http\Message\Factory\ServerRequestFactory;
+use Rancoud\Http\Message\Response;
 
 /**
  * Class Router.
  */
-class Router
+class Router implements RequestHandlerInterface
 {
     /** @var Route[] */
     protected static $routes = [];
+
     /** @var null */
     protected static $url = null;
+
     /** @var null */
     protected static $method = null;
+
     /** @var Route */
     protected static $currentRoute = null;
+
     /** @var array */
     protected static $routeParameters = [];
 
@@ -205,16 +212,47 @@ class Router
         return self::$routeParameters;
     }
 
-    public static function dispatch(): void
+    /**
+     * @param ServerRequestInterface|null $request
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return ResponseInterface
+     */
+    public static function dispatch(ServerRequestInterface $request = null): ResponseInterface
     {
         if (self::$currentRoute === null) {
             //TODO custom 404
-            return;
+            return null;
         }
 
-        $request = new Request();
-        $response = new Response();
-        self::$currentRoute->callCallable($request, $response);
+        if ($request === null) {
+            $request = (new ServerRequestFactory())->createServerRequestFromGlobals();
+        }
+
+        foreach (self::$routeParameters as $param => $value) {
+            $request = $request->withAttribute($param, $value);
+        }
+
+        //compilMiddlewares();
+
+        return (new self())->handle($request);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     */
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        //get current middleware
+        //si pas de middleware tu cries
+        // if is_callable($middleware)
+        //    call_user_func_array($this->middleware[0], $request, [$this, 'handle']);
+        // if instance of middelware
+        //    $middleware->process($request, $this)
+        return Response();
     }
 
     /* @var Route[] */

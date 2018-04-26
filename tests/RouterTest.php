@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Rancoud\Router\Test;
 
 use PHPUnit\Framework\TestCase;
-use Rancoud\Http\Request;
-use Rancoud\Http\Response;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Rancoud\Http\Message\Factory\MessageFactory;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 
@@ -195,20 +196,43 @@ class RouterTest extends TestCase
     /**
      * @runInSeparateProcess
      */
-    public function testCallable()
+    /*public function testCallable()
     {
         Router::get('/', function () {
             static::assertTrue(true);
+
+            return (new MessageFactory())->createResponse();
         });
         Router::findRoute('GET', '/');
         Router::dispatch();
 
-        Router::get('/{id}', function (Request $req, Response $res) {
+        Router::get('/{id}', function (ServerRequestInterface $req) {
             static::assertTrue(true);
-            //echo $req->getGetParameters('id');
-            //$res->end();
+            static::assertSame('12', $req->getAttribute('id'));
+            return (new MessageFactory())->createResponse();
         });
         Router::findRoute('GET', '/12');
         Router::dispatch();
+    }*/
+
+    /**
+     * @runInSeparateProcess
+     */
+    /*public function testRequestHandler()
+    {
+        Router::get('/', new ControllerDummy());
+        Router::findRoute('GET', '/');
+        $response = Router::dispatch();
+        static::assertNotNull($response);
+    }*/
+}
+/*
+require __DIR__ . '/../vendor/rancoud/http/src/Psr/RequestHandlerInterface.php';
+class ControllerDummy implements \Psr\Http\Server\RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return (new MessageFactory())->createResponse();
     }
 }
+*/
