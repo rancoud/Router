@@ -118,6 +118,24 @@ class RouterTest extends TestCase
         $found = $this->router->findRoute('GET', '/aze');
         static::assertFalse($found);
     }
+
+    public function testFindAllCrudRoute()
+    {
+        $this->router->crud('/posts', function () {
+        });
+        $found = $this->router->findRoute('GET', '/posts');
+        static::assertTrue($found);
+        $found = $this->router->findRoute('GET', '/posts/new');
+        static::assertTrue($found);
+        $found = $this->router->findRoute('POST', '/posts/new');
+        static::assertTrue($found);
+        $found = $this->router->findRoute('GET', '/posts/1');
+        static::assertTrue($found);
+        $found = $this->router->findRoute('POST', '/posts/1');
+        static::assertTrue($found);
+        $found = $this->router->findRoute('DELETE', '/posts/1');
+        static::assertTrue($found);
+    }
     
     public function testFindRouteWithParameters()
     {

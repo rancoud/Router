@@ -132,6 +132,22 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @param string $prefixPath
+     * @param        $callback
+     *
+     * @throws \Exception
+     */
+    public function crud(string $prefixPath, $callback)
+    {
+        $this->get($prefixPath, $callback);
+        $this->get($prefixPath . '/new', $callback);
+        $this->post($prefixPath . '/new', $callback);
+        $this->get($prefixPath . '/{id:\d+}', $callback);
+        $this->post($prefixPath . '/{id:\d+}', $callback);
+        $this->delete($prefixPath . '/{id:\d+}', $callback);
+    }
+
+    /**
      * @return Route[]
      */
     public function getRoutes(): array

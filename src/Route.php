@@ -97,13 +97,36 @@ class Route
      */
     public function compileRegex(): string
     {
-        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $this->url);
+        $url = $this->extractInlineContraints();
+
+        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
 
         foreach ($this->constraints as $id => $regexRule) {
             $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
         }
 
         return $regex;
+    }
+
+    /**
+     * @return string
+     */
+    protected function extractInlineContraints()
+    {
+        $url = $this->url;
+
+        preg_match('/\{(\w+?):(.+?)\}/', $url, $routeParameters);
+
+        array_shift($routeParameters);
+        if (count($routeParameters) > 0) {
+            foreach ($routeParameters as $key => $value) {
+                $this->constraints[$key] = $value;
+            }
+
+            $url = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $url);
+        }
+
+        return $url;
     }
 
     /**
