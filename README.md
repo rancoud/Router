@@ -9,6 +9,9 @@ Router PSR7 and PSR15.
 composer require rancoud/router
 ```
 
+## Dependencies
+[Http package](https://github.com/rancoud/Http)
+
 ## How to use it?
 ### General Case
 ```php
