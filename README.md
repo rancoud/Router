@@ -68,6 +68,11 @@ $router->addGlobalMiddleware(function ($request, $next) {});
 // middleware for only route
 $route = new Route('GET', '/{id}', function ($request, $next) {});
 $route->addMiddleware(function ($request, $next) {});
+
+// for passing to next middleware
+$router->addGlobalMiddleware(function ($request, $next) {
+    $next($request);
+});
 ```
 
 ## Router Methods
