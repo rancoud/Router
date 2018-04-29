@@ -11,6 +11,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Rancoud\Http\Message\Factory\MessageFactory;
 use Rancoud\Http\Message\Factory\ServerRequestFactory;
+use Rancoud\Http\Message\Response;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 

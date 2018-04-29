@@ -281,7 +281,7 @@ class Router implements RequestHandlerInterface
         $this->currentMiddlewareInPipeIndex = 0;
         $this->middlewaresInPipe = array_merge($this->middlewaresInPipe, $this->globalMiddlewares);
         $this->middlewaresInPipe = array_merge($this->middlewaresInPipe, $this->currentRoute->getMiddlewares());
-        $this->middlewaresInPipe[] = $this->currentRoute->getCallable();
+        $this->middlewaresInPipe[] = $this->currentRoute->getCallback();
     }
 
     /**

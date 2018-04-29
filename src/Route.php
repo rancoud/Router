@@ -19,7 +19,7 @@ class Route
     protected $url = '';
 
     /** @var string|null */
-    protected $callable = null;
+    protected $callback = null;
 
     /** @var array */
     protected $constraints = [];
@@ -32,16 +32,16 @@ class Route
      *
      * @param array|string   $methods
      * @param string         $url
-     * @param Closure|string $callable
+     * @param Closure|string $callback
      *
      * @throws Exception
      */
-    public function __construct($methods, string $url, $callable)
+    public function __construct($methods, string $url, $callback)
     {
         $this->setMethods($methods);
         $this->setUrl($url);
 
-        $this->callable = $callable;
+        $this->callback = $callback;
     }
 
     /**
@@ -140,9 +140,9 @@ class Route
     /**
      * @return Closure|null|string
      */
-    public function getCallable()
+    public function getCallback()
     {
-        return $this->callable;
+        return $this->callback;
     }
 
     /**
