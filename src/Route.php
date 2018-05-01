@@ -95,15 +95,18 @@ class Route
     }
 
     /**
+     * @param array $globalConstraints
+     *
      * @return string
      */
-    public function compileRegex(): string
+    public function compileRegex(array $globalConstraints): string
     {
         $url = $this->extractInlineContraints();
 
         $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
 
-        foreach ($this->constraints as $id => $regexRule) {
+        $constraints = array_merge($globalConstraints, $this->constraints);
+        foreach ($constraints as $id => $regexRule) {
             $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
         }
 

@@ -39,6 +39,9 @@ class Router implements RequestHandlerInterface
     /** @var array */
     protected $globalMiddlewares = [];
 
+    /** @var array */
+    protected $globalConstraints = [];
+
     /**
      * @param Route $route
      */
@@ -208,7 +211,7 @@ class Router implements RequestHandlerInterface
                 continue;
             }
 
-            $pattern = '#^' . $route->compileRegex() . '$#s';
+            $pattern = '#^' . $route->compileRegex($this->globalConstraints) . '$#s';
             $matches = [];
 
             if (preg_match($pattern, $this->url, $matches)) {
@@ -425,5 +428,13 @@ class Router implements RequestHandlerInterface
 
             $this->addRoute($newRoute);
         }
+    }
+
+    /**
+     * @param array $constraints
+     */
+    public function setGlobalParametersConstraints(array $constraints): void
+    {
+        $this->globalConstraints = $constraints;
     }
 }

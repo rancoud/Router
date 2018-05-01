@@ -583,6 +583,25 @@ class RouterTest extends TestCase
         $routes = $this->router->getRoutes();
         static::assertTrue(count($routes) === 0);
     }
+
+    public function testSetGlobalConstraints()
+    {
+        $request1Found = (new ServerRequestFactory())->createServerRequest('GET', '/article/fr');
+        $request2Found = (new ServerRequestFactory())->createServerRequest('GET', '/article_bis/jp');
+
+        $request1NotFound = (new ServerRequestFactory())->createServerRequest('GET', '/article/kx');
+        $request2NotFound = (new ServerRequestFactory())->createServerRequest('GET', '/article_bis/m');
+
+        $this->router->setGlobalParametersConstraints(['lang' => 'en|fr']);
+        $this->router->get('/article/{lang}', 'a');
+        $this->router->get('/article_bis/{lang}', 'b')->setParametersConstraints(['lang' => 'jp']);
+
+        static::assertTrue($this->router->findRouteRequest($request1Found));
+        static::assertFalse($this->router->findRouteRequest($request1NotFound));
+
+        static::assertTrue($this->router->findRouteRequest($request2Found));
+        static::assertFalse($this->router->findRouteRequest($request2NotFound));
+    }
 }
 class ExampleMiddleware implements MiddlewareInterface{
 

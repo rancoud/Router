@@ -63,6 +63,17 @@ $route = new Route('GET', '/{id}', function ($request, $next) {});
 $route->setParametersConstraints(['id' => '\d+']);
 ```
 
+You can setup a global constraint when you use the same regex multiple times  
+```php
+$router->setGlobalParametersConstraints(['lang' => 'en|fr']);
+
+// {lang} will use the global constraints
+$router->get('/article/{lang}', function ($request, $next) {});
+
+// {lang} will use the local constraints define by the route
+$router->get('/news/{lang}', function ($request, $next) {})->setParametersConstraints(['lang' => 'jp']);
+```
+
 ### Middlewares
 ```php
 // global middleware for router
