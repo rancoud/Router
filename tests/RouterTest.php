@@ -44,6 +44,16 @@ class RouterTest extends TestCase
         static::assertSame(1, count($this->router->getRoutes()));
     }
 
+    public function testShortcutGetFluent()
+    {
+        $this->router->get('/', function () {
+        })->setName('route a');
+        
+        $routes = $this->router->getRoutes();
+        static::assertSame(1, count($routes));
+        static::assertSame('route a', $routes[0]->getName());
+    }
+
     public function testShortcutPost()
     {
         $this->router->post('/', function () {

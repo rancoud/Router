@@ -27,7 +27,7 @@ class RouteTest extends TestCase
         static::assertSame('Rancoud\Router\Route', get_class($route));
     }
 
-    public function testConstrucRouterException()
+    public function testConstructRouterException()
     {
         try {
             new Route('', '/', function () {

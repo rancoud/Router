@@ -51,91 +51,103 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function get(string $url, $callback): void
+    public function get(string $url, $callback): Route
     {
         $route = new Route(['GET', 'HEAD'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function post(string $url, $callback): void
+    public function post(string $url, $callback): Route
     {
         $route = new Route(['POST'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function put(string $url, $callback): void
+    public function put(string $url, $callback): Route
     {
         $route = new Route(['PUT'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function patch(string $url, $callback): void
+    public function patch(string $url, $callback): Route
     {
         $route = new Route(['PATCH'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function delete(string $url, $callback): void
+    public function delete(string $url, $callback): Route
     {
         $route = new Route(['DELETE'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function options(string $url, $callback): void
+    public function options(string $url, $callback): Route
     {
         $route = new Route(['OPTIONS'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $url
      * @param        $callback
      *
-     * @throws \Exception
+     * @return Route
      */
-    public function any(string $url, $callback): void
+    public function any(string $url, $callback): Route
     {
         $route = new Route(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $url, $callback);
         $this->addRoute($route);
+
+        return $route;
     }
 
     /**
      * @param string $prefixPath
      * @param        $callback
-     *
-     * @throws \Exception
      */
     public function crud(string $prefixPath, $callback): void
     {

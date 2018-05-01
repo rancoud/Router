@@ -84,12 +84,12 @@ $router->addGlobalMiddleware(function ($request, $next) {
 * addRoute(route: \Rancoud\Router\Route):void  
 
 #### Add route shortcuts
-* get(url: string, callback: mixed):void  
-* post(url: string, callback: mixed):void  
-* put(url: string, callback: mixed):void  
-* patch(url: string, callback: mixed):void  
-* delete(url: string, callback: mixed):void  
-* options(url: string, callback: mixed):void  
+* get(url: string, callback: mixed):\Rancoud\Router\Route  
+* post(url: string, callback: mixed):\Rancoud\Router\Route  
+* put(url: string, callback: mixed):\Rancoud\Router\Route  
+* patch(url: string, callback: mixed):\Rancoud\Router\Route  
+* delete(url: string, callback: mixed):\Rancoud\Router\Route  
+* options(url: string, callback: mixed):\Rancoud\Router\Route  
 * any(url: string, callback: mixed):void  
 
 #### Add route for a CRUD system
