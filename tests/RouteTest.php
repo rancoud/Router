@@ -6,6 +6,7 @@ namespace Rancoud\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Rancoud\Router\Route;
+use Rancoud\Router\RouterException;
 
 /**
  * Class RouterTest.
@@ -26,41 +27,41 @@ class RouteTest extends TestCase
         static::assertSame('Rancoud\Router\Route', get_class($route));
     }
 
-    public function testConstructException()
+    public function testConstrucRouterException()
     {
         try {
             new Route('', '/', function () {
             });
-        } catch (\Exception $e) {
-            static::assertSame(\Exception::class, get_class($e));
+        } catch (RouterException $e) {
+            static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
             new Route(false, '/', function () {
             });
-        } catch (\Exception $e) {
-            static::assertSame(\Exception::class, get_class($e));
+        } catch (RouterException $e) {
+            static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
             new Route('method', '/', function () {
             });
-        } catch (\Exception $e) {
-            static::assertSame(\Exception::class, get_class($e));
+        } catch (RouterException $e) {
+            static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
             new Route('get', '/', function () {
             });
-        } catch (\Exception $e) {
-            static::assertSame(\Exception::class, get_class($e));
+        } catch (RouterException $e) {
+            static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
             new Route('GET', '', function () {
             });
-        } catch (\Exception $e) {
-            static::assertSame(\Exception::class, get_class($e));
+        } catch (RouterException $e) {
+            static::assertSame(RouterException::class, get_class($e));
         }
     }
 }

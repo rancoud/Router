@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Rancoud\Router;
 
 use Closure;
-use Exception;
 
 /**
  * Class Route.
@@ -27,6 +26,9 @@ class Route
     /** @var array */
     protected $middlewares = [];
 
+    /** @var string */
+    protected $name;
+
     /**
      * Route constructor.
      *
@@ -34,7 +36,7 @@ class Route
      * @param string         $url
      * @param Closure|string $callback
      *
-     * @throws Exception
+     * @throws RouterException
      */
     public function __construct($methods, string $url, $callback)
     {
@@ -47,7 +49,7 @@ class Route
     /**
      * @param array|string $methods
      *
-     * @throws Exception
+     * @throws RouterException
      */
     protected function setMethods($methods): void
     {
@@ -58,12 +60,12 @@ class Route
         if (is_string($methods)) {
             $methods = [$methods];
         } elseif (!is_array($methods)) {
-            throw new Exception('Method invalid');
+            throw new RouterException('Method invalid');
         }
 
         foreach ($methods as $method) {
             if (!in_array($method, $validMethods, true)) {
-                throw new Exception('Method invalid: ' . $method);
+                throw new RouterException('Method invalid: ' . $method);
             }
         }
 
@@ -73,12 +75,12 @@ class Route
     /**
      * @param string $url
      *
-     * @throws Exception
+     * @throws RouterException
      */
     protected function setUrl(string $url): void
     {
         if (mb_strlen($url) < 1) {
-            throw new Exception('Empty url');
+            throw new RouterException('Empty url');
         }
 
         $this->url = $url;
@@ -111,7 +113,7 @@ class Route
     /**
      * @return string
      */
-    protected function extractInlineContraints()
+    protected function extractInlineContraints(): string
     {
         $url = $this->url;
 
@@ -148,7 +150,7 @@ class Route
     /**
      * @param $middleware
      */
-    public function addMiddleware($middleware)
+    public function addMiddleware($middleware): void
     {
         $this->middlewares[] = $middleware;
     }
@@ -156,8 +158,40 @@ class Route
     /**
      * @return array
      */
-    public function getMiddlewares()
+    public function getMiddlewares(): array
     {
         return $this->middlewares;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParametersConstraints(): array
+    {
+        return $this->constraints;
     }
 }

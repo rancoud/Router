@@ -14,6 +14,8 @@ use Rancoud\Http\Message\Factory\ServerRequestFactory;
 use Rancoud\Http\Message\Response;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
+use Rancoud\Router\RouterException;
+use ReflectionClass;
 
 /**
  * Class RouterTest.
@@ -376,6 +378,200 @@ class RouterTest extends TestCase
         static::assertNotNull($response);
         static::assertEquals(200, $response->getStatusCode());
         static::assertEquals('ok', $response->getBody());
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArray()
+    {
+        $config = [
+            'router' => [
+                'middlewares' => [
+                    'callback1',
+                    'callback2',
+                    'callback3'
+                ],
+            ],
+            'routes' => [
+                [
+                    'methods' => ['GET'],
+                    'url' => '/{id}',
+                    'callback' => 'callback',
+                    'constraints' => ['id' => '\w+'],
+                    'middlewares' => ['a', 'b'],
+                    'name' => 'route1'
+                ],
+                [
+                    'methods' => ['POST'],
+                    'url' => '/aze',
+                    'callback' => 'callback',
+                ]
+            ]
+        ];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+        $routes = $this->router->getRoutes();
+        static::assertTrue(count($routes) === 2);
+
+        $router = new ReflectionClass($this->router);
+        $property = $router->getProperty('globalMiddlewares');
+        $property->setAccessible(true);
+        
+        static::assertEquals($config['router']['middlewares'], $property->getValue($this->router));
+
+        static::assertEquals($config['routes'][0]['methods'], $routes[0]->getMethods());
+        static::assertEquals($config['routes'][0]['middlewares'], $routes[0]->getMiddlewares());
+        static::assertEquals($config['routes'][0]['callback'], $routes[0]->getCallback());
+        static::assertEquals($config['routes'][0]['name'], $routes[0]->getName());
+        static::assertEquals($config['routes'][0]['url'], $routes[0]->getUrl());
+        static::assertEquals($config['routes'][0]['constraints'], $routes[0]->getParametersConstraints());
+
+        static::assertEquals($config['routes'][1]['methods'], $routes[1]->getMethods());
+        static::assertEquals([], $routes[1]->getMiddlewares());
+        static::assertEquals($config['routes'][1]['callback'], $routes[1]->getCallback());
+        static::assertEquals(null, $routes[1]->getName());
+        static::assertEquals($config['routes'][1]['url'], $routes[1]->getUrl());
+        static::assertEquals([], $routes[1]->getParametersConstraints());
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoRouterPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['GET'],
+                    'url' => '/{id}',
+                    'callback' => 'callback',
+                    'constraints' => ['id' => '\w+'],
+                    'middlewares' => ['a', 'b'],
+                    'name' => 'route1'
+                ],
+                [
+                    'methods' => ['POST'],
+                    'url' => '/aze',
+                    'callback' => 'callback',
+                ]
+            ]
+        ];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+        $routes = $this->router->getRoutes();
+        static::assertTrue(count($routes) === 2);
+
+        $router = new ReflectionClass($this->router);
+        $property = $router->getProperty('globalMiddlewares');
+        $property->setAccessible(true);
+
+        static::assertEquals([], $property->getValue($this->router));
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareInRouterPart()
+    {
+        $config = [
+            'router' => null
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config router has to be an array');
+        
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareValidInRouterPart()
+    {
+        $config = [
+            'router' => ['middlewares' => null]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config router/middlewares has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoValidRoutes()
+    {
+        $config = [
+            'routes' => null
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoMethodsInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                []
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/methods is mandatory');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoUrlInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST']
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/url is mandatory');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoCallbackInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST'],
+                    'url' => '/'
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/callback is mandatory');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidMiddlewaresInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST'],
+                    'url' => '/',
+                    'callback' => 'a',
+                    'middlewares' => null
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/middlewares has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoRoutesPart()
+    {
+        $config = [];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+        $routes = $this->router->getRoutes();
+        static::assertTrue(count($routes) === 0);
     }
 }
 class ExampleMiddleware implements MiddlewareInterface{

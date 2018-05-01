@@ -100,6 +100,40 @@ GET  $prefixPath
 GET / POST  $prefixPath . '/new'  
 GET / POST / DELETE $prefixPath . '/{id:\d+}'  
 
+#### Setup Router and Routes with an array
+* setupRouterAndRoutesWithConfigArray(config: array):void  
+
+In this example you can setup router's middlewares and routes with an array  
+```php
+$config = [
+    'router' => [
+        'middlewares' => [
+            'global_callback1',
+            'global_callback2',
+            'global_callback3'
+        ],
+    ],
+    'routes' => [
+        [
+            'methods' => ['GET'],
+            'url' => '/{id}',
+            'callback' => 'route_callback',
+            'constraints' => ['id' => '\w+'],
+            'middlewares' => ['route_middleware1', 'route_middleware2'],
+            'name' => 'route1'
+        ],
+        [
+            'methods' => ['POST'],
+            'url' => '/aze',
+            'callback' => 'callback',
+        ]
+    ]
+];
+
+$router = new Router();
+$router->setupRouterAndRoutesWithConfigArray($config);
+```
+
 #### Get Routes
 * getRoutes():\Rancoud\Router\Route[]  
 
@@ -131,8 +165,11 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 ### General Commands  
 #### Getters
 * getMethods():array  
+* getUrl():string  
+* getName():string  
 #### Constraints
 * setParametersConstraints(constraints: array):void  
+* getParametersConstraints():array  
 * compileRegex():string  
 #### Callback
 * getCallback():mixed  

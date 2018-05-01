@@ -137,7 +137,7 @@ class Router implements RequestHandlerInterface
      *
      * @throws \Exception
      */
-    public function crud(string $prefixPath, $callback)
+    public function crud(string $prefixPath, $callback): void
     {
         $this->get($prefixPath, $callback);
         $this->get($prefixPath . '/new', $callback);
@@ -276,7 +276,7 @@ class Router implements RequestHandlerInterface
         return $this->handle($request);
     }
 
-    protected function pushMiddlewaresToApplyInPipe()
+    protected function pushMiddlewaresToApplyInPipe(): void
     {
         $this->currentMiddlewareInPipeIndex = 0;
         $this->middlewaresInPipe = array_merge($this->middlewaresInPipe, $this->globalMiddlewares);
@@ -321,8 +321,97 @@ class Router implements RequestHandlerInterface
     /**
      * @param $middleware
      */
-    public function addGlobalMiddleware($middleware)
+    public function addGlobalMiddleware($middleware): void
     {
         $this->globalMiddlewares[] = $middleware;
+    }
+
+    /**
+     * @param array $config
+     *
+     * @throws RouterException
+     */
+    public function setupRouterAndRoutesWithConfigArray(array $config): void
+    {
+        $this->treatRouterConfig($config);
+        $this->treatRoutesConfig($config);
+    }
+
+    /**
+     * @param array $config
+     *
+     * @throws RouterException
+     */
+    protected function treatRouterConfig(array $config): void
+    {
+        if (array_key_exists('router', $config) === false) {
+            return;
+        }
+
+        if (is_array($config['router']) === false) {
+            throw new RouterException('Config router has to be an array');
+        }
+
+        if (array_key_exists('middlewares', $config['router'])) {
+            if (is_array($config['router']['middlewares']) === false) {
+                throw new RouterException('Config router/middlewares has to be an array');
+            }
+
+            foreach ($config['router']['middlewares'] as $middleware) {
+                $this->addGlobalMiddleware($middleware);
+            }
+        }
+    }
+
+    /**
+     * @param array $config
+     *
+     * @throws RouterException
+     */
+    protected function treatRoutesConfig(array $config): void
+    {
+        if (array_key_exists('routes', $config) === false) {
+            return;
+        }
+
+        if (is_array($config['routes']) === false) {
+            throw new RouterException('Config routes has to be an array');
+        }
+
+        foreach ($config['routes'] as $route) {
+            if (array_key_exists('methods', $route) === false) {
+                throw new RouterException('Config routes/methods is mandatory');
+            }
+
+            if (array_key_exists('url', $route) === false) {
+                throw new RouterException('Config routes/url is mandatory');
+            }
+
+            if (array_key_exists('callback', $route) === false) {
+                throw new RouterException('Config routes/callback is mandatory');
+            }
+
+            $newRoute = new Route($route['methods'], $route['url'], $route['callback']);
+
+            if (array_key_exists('constraints', $route)) {
+                $newRoute->setParametersConstraints($route['constraints']);
+            }
+
+            if (array_key_exists('middlewares', $route)) {
+                if (is_array($route['middlewares']) === false) {
+                    throw new RouterException('Config routes/middlewares has to be an array');
+                }
+
+                foreach ($route['middlewares'] as $middleware) {
+                    $newRoute->addMiddleware($middleware);
+                }
+            }
+
+            if (array_key_exists('name', $route)) {
+                $newRoute->setName($route['name']);
+            }
+
+            $this->addRoute($newRoute);
+        }
     }
 }
