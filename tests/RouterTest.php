@@ -399,6 +399,9 @@ class RouterTest extends TestCase
                     'callback2',
                     'callback3'
                 ],
+                'constraints' => [
+                    'lang' => 'fr|en'
+                ]
             ],
             'routes' => [
                 [
@@ -424,8 +427,11 @@ class RouterTest extends TestCase
         $router = new ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
         $property->setAccessible(true);
-        
         static::assertEquals($config['router']['middlewares'], $property->getValue($this->router));
+
+        $property = $router->getProperty('globalConstraints');
+        $property->setAccessible(true);
+        static::assertEquals($config['router']['constraints'], $property->getValue($this->router));
 
         static::assertEquals($config['routes'][0]['methods'], $routes[0]->getMethods());
         static::assertEquals($config['routes'][0]['middlewares'], $routes[0]->getMiddlewares());
@@ -493,6 +499,18 @@ class RouterTest extends TestCase
 
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Config router/middlewares has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoConstraintValidInRouterPart()
+    {
+        $config = [
+            'router' => ['constraints' => null]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config router/constraints has to be an array');
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }

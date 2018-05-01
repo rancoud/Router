@@ -342,6 +342,14 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @param array $middlewares
+     */
+    public function setGlobalMiddlewares(array $middlewares): void
+    {
+        $this->globalMiddlewares = $middlewares;
+    }
+
+    /**
      * @param array $config
      *
      * @throws RouterException
@@ -372,9 +380,15 @@ class Router implements RequestHandlerInterface
                 throw new RouterException('Config router/middlewares has to be an array');
             }
 
-            foreach ($config['router']['middlewares'] as $middleware) {
-                $this->addGlobalMiddleware($middleware);
+            $this->setGlobalMiddlewares($config['router']['middlewares']);
+        }
+
+        if (array_key_exists('constraints', $config['router'])) {
+            if (is_array($config['router']['constraints']) === false) {
+                throw new RouterException('Config router/constraints has to be an array');
             }
+
+            $this->setGlobalParametersConstraints($config['router']['constraints']);
         }
     }
 

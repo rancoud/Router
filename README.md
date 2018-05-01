@@ -123,6 +123,9 @@ $config = [
             'global_callback2',
             'global_callback3'
         ],
+        'constraints' => [
+            'lang' => 'en|fr'
+        ]
     ],
     'routes' => [
         [
@@ -162,6 +165,10 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 
 #### Middlewares
 * addGlobalMiddleware(middleware: mixed):void  
+* setGlobalMiddlewares(middlewares: array):void  
+
+#### Global constraints
+* setGlobalParametersConstraints(constraints: array): void  
 
 ## Route Constructor
 ### Settings
