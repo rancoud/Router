@@ -620,6 +620,64 @@ class RouterTest extends TestCase
         static::assertTrue($this->router->findRouteRequest($request2Found));
         static::assertFalse($this->router->findRouteRequest($request2NotFound));
     }
+
+    public function testGenerateUrl()
+    {
+        $config = [
+            'router' => [
+                'constraints' => [
+                    'lang' => 'fr|en'
+                ]
+            ],
+            'routes' => [
+                [
+                    'methods' => ['GET'],
+                    'url' => '/road',
+                    'callback' => 'callback',
+                    'constraints' => ['id' => '\w+'],
+                    'name' => 'route0'
+                ],
+                [
+                    'methods' => ['GET'],
+                    'url' => '/{lang}-{id}',
+                    'callback' => 'callback',
+                    'constraints' => ['id' => '\w+'],
+                    'name' => 'route1'
+                ],
+                [
+                    'methods' => ['GET'],
+                    'url' => '/{id:\w+}/pagename',
+                    'callback' => 'callback',
+                    'name' => 'route2'
+                ],
+                [
+                    'methods' => ['GET'],
+                    'url' => '/{lang}/postname',
+                    'callback' => 'callback',
+                    'constraints' => ['lang' => 'jp'],
+                    'name' => 'route3'
+                ],
+            ]
+        ];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+
+        $urls = [];
+        $urls[] = $this->router->generateUrl('route0');
+        $urls[] = $this->router->generateUrl('route1', ['lang' => 'fr', 'id' => '2']);
+        $urls[] = $this->router->generateUrl('route2', ['id' => '12']);
+        $urls[] = $this->router->generateUrl('route3', ['lang' => 'jp']);
+        $urls[] = $this->router->generateUrl('route1');
+        $urls[] = $this->router->generateUrl('no_route');
+
+        static::assertEquals('/road', $urls[0]);
+        static::assertEquals('/fr-2', $urls[1]);
+        static::assertEquals('/12/pagename', $urls[2]);
+        static::assertEquals('/jp/postname', $urls[3]);
+        static::assertEquals('/{lang}-{id}', $urls[4]);
+        static::assertNull($urls[5]);
+        
+    }
 }
 class ExampleMiddleware implements MiddlewareInterface{
 

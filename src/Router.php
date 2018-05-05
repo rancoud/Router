@@ -451,4 +451,22 @@ class Router implements RequestHandlerInterface
     {
         $this->globalConstraints = $constraints;
     }
+
+    /**
+     * @param string $routeName
+     * @param array  $routeParameters
+     *
+     * @return null|string
+     */
+    public function generateUrl(string $routeName, array $routeParameters = []): ?string
+    {
+        $routeSelected = null;
+        foreach ($this->routes as $route) {
+            if ($route->getName() === $routeName) {
+                return $route->generateUrl($routeParameters);
+            }
+        }
+
+        return null;
+    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rancoud\Router;
 
 use Closure;
+use Rancoud\Http\Message\Request;
 
 /**
  * Class Route.
@@ -53,10 +54,6 @@ class Route
      */
     protected function setMethods($methods): void
     {
-        $validMethods = ['CHECKOUT', 'CONNECT', 'COPY', 'DELETE', 'GET', 'HEAD', 'LINK', 'LOCK', 'M-SEARCH', 'MERGE',
-            'MKACTIVITY', 'MKCALENDAR', 'MKCOL', 'MOVE', 'NOTIFY', 'OPTIONS', 'PATCH', 'POST', 'PROPFIND', 'PROPPATCH',
-            'PURGE', 'PUT', 'REPORT', 'SEARCH', 'SUBSCRIBE', 'TRACE', 'UNLINK', 'UNLOCK', 'UNSUBSCRIBE', 'VIEW'];
-
         if (is_string($methods)) {
             $methods = [$methods];
         } elseif (!is_array($methods)) {
@@ -64,7 +61,7 @@ class Route
         }
 
         foreach ($methods as $method) {
-            if (!in_array($method, $validMethods, true)) {
+            if (!in_array($method, Request::$methods, true)) {
                 throw new RouterException('Method invalid: ' . $method);
             }
         }
@@ -196,5 +193,21 @@ class Route
     public function getParametersConstraints(): array
     {
         return $this->constraints;
+    }
+
+    /**
+     * @param array $routeParameters
+     *
+     * @return string
+     */
+    public function generateUrl(array $routeParameters = []): string
+    {
+        $url = $this->getUrl();
+        $url = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $url);
+        foreach ($routeParameters as $parameter => $value) {
+            $url = str_replace('{' . $parameter . '}', $value, $url);
+        }
+
+        return $url;
     }
 }
