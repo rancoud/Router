@@ -172,6 +172,7 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 
 #### Global constraints
 * setGlobalParametersConstraints(constraints: array): void  
+* setGlobalHostConstraints(constraints: array): void  
 
 #### Generate url for a named route
 * generateUrl(route: string, [routeParameters: array = []])  
@@ -187,10 +188,11 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 
 ## Route Methods
 ### General Commands  
-#### Getters
+#### Getters/Setters
 * getMethods():array  
 * getUrl():string  
 * getName():string  
+* setName(name: string)  
 #### Constraints
 * setParametersConstraints(constraints: array):void  
 * getParametersConstraints():array  
@@ -201,7 +203,12 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 * addMiddleware(middleware: mixed):array  
 * getMiddlewares():array  
 #### Generate Url
-* generateUrl([routeParameters: array = []])  
+* generateUrl([routeParameters: array = []]):string  
+#### Host
+* setHost(host: string, [hostConstraints: array = []]):void  
+* setHostConstraints(constraints: array):void  
+* isSameHost(host: string, globalConstraints: array = []):bool  
+* getHostParameters():array  
 
 ## How to Dev
 `./run_all_commands.sh` for php-cs-fixer and phpunit and coverage  
