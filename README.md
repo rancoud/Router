@@ -170,6 +170,9 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 #### Global constraints
 * setGlobalParametersConstraints(constraints: array): void  
 
+#### Generate url for a named route
+* generateUrl(route: string, [routeParameters: array = []])  
+
 ## Route Constructor
 ### Settings
 #### Mandatory
@@ -194,6 +197,8 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 #### Middlewares
 * addMiddleware(middleware: mixed):array  
 * getMiddlewares():array  
+#### Generate Url
+* generateUrl([routeParameters: array = []])  
 
 ## How to Dev
 `./run_all_commands.sh` for php-cs-fixer and phpunit and coverage  
