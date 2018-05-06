@@ -42,6 +42,12 @@ class Router implements RequestHandlerInterface
     /** @var array */
     protected $globalConstraints = [];
 
+    /** @var string */
+    protected $host;
+
+    /** @var array */
+    protected $hostConstraints = [];
+
     /**
      * @param Route $route
      */
@@ -180,20 +186,32 @@ class Router implements RequestHandlerInterface
         /* @var $request \Rancoud\Http\Message\ServerRequest */
         $this->method = $request->getMethod();
         $this->url = $request->getUri()->getPath();
+        
+        $serverParams = $request->getServerParams();
+        if(array_key_exists('HTTP_HOST', $serverParams)){
+            $this->host = $serverParams['HTTP_HOST'];
+        } else if (array_key_exists('SERVER_NAME', $serverParams)){
+            $this->host = $serverParams['SERVER_NAME'];
+        } else {
+            $this->host = null;
+        }
 
         return $this->find();
     }
 
     /**
-     * @param string $method
-     * @param string $url
+     * @param string      $method
+     * @param string      $url
+     *
+     * @param string|null $host
      *
      * @return bool
      */
-    public function findRoute(string $method, string $url): bool
+    public function findRoute(string $method, string $url, string $host = null): bool
     {
         $this->method = $method;
         $this->url = $this->removeQueryFromUrl($url);
+        $this->host = $host;
 
         return $this->find();
     }
@@ -211,6 +229,10 @@ class Router implements RequestHandlerInterface
                 continue;
             }
 
+            if($this->isNotSameHost($route)) {
+                continue;
+            }
+            
             $pattern = '#^' . $route->compileRegex($this->globalConstraints) . '$#s';
             $matches = [];
 
@@ -254,6 +276,24 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @param Route $route
+     *
+     * @return bool
+     */
+    protected function isNotSameHost(Route $route): bool
+    {
+        if($this->host === null && $route->getHost() === null){
+            return false;
+        }
+
+        if($this->host === null && $route->getHost() !== null){
+            return true;
+        }
+
+        return !$route->isSameHost($this->host, $this->hostConstraints);
+    }
+
+    /**
      * @param array $routeParameters
      */
     protected function saveRouteParameters(array $routeParameters): void
@@ -282,6 +322,10 @@ class Router implements RequestHandlerInterface
      */
     public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
+        foreach ($this->currentRoute->getHostParameters() as $param => $value) {
+            $request = $request->withAttribute($param, $value);
+        }
+
         foreach ($this->routeParameters as $param => $value) {
             $request = $request->withAttribute($param, $value);
         }
@@ -451,7 +495,7 @@ class Router implements RequestHandlerInterface
     {
         $this->globalConstraints = $constraints;
     }
-
+    
     /**
      * @param string $routeName
      * @param array  $routeParameters
@@ -468,5 +512,13 @@ class Router implements RequestHandlerInterface
         }
 
         return null;
+    }
+
+    /**
+     * @param array $constraints
+     */
+    public function setGlobalHostConstraints(array $constraints): void
+    {
+        $this->hostConstraints = $constraints;
     }
 }

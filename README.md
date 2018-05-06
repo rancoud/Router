@@ -15,7 +15,7 @@ composer require rancoud/router
 ## How to use it?
 ### General Case
 ```php
-// Instanciation
+// Instantiation
 $router = new Router();
 
 // Add routes
@@ -28,6 +28,9 @@ $found = $router->findRoute('GET', '/posts');
 
 // Dispatch (response is a PSR7 object \Psr\Http\Message\Response)
 $response = $router->dispatch($request);
+
+// Display Response
+$response->send();
 ```
 
 ### Routes shortcuts
@@ -152,7 +155,7 @@ $router->setupRouterAndRoutesWithConfigArray($config);
 * getRoutes():\Rancoud\Router\Route[]  
 
 #### Find route
-* findRoute(method: string, url: string):bool  
+* findRoute(method: string, url: string, [host: string=null]):bool  
 * findRouteRequest(request: \Psr\Http\Message\ServerRequestInterface):bool  
 * getRouteParameters():array  
 

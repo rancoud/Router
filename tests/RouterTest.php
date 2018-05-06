@@ -11,7 +11,8 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Rancoud\Http\Message\Factory\MessageFactory;
 use Rancoud\Http\Message\Factory\ServerRequestFactory;
-use Rancoud\Http\Message\Response;
+use Rancoud\Http\Message\Request;
+use Rancoud\Http\Message\ServerRequest;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 use Rancoud\Router\RouterException;
@@ -177,6 +178,12 @@ class RouterTest extends TestCase
         static::assertSame('fr', $parameters['locale']);
         static::assertSame('1990', $parameters['year']);
         static::assertSame('myslug', $parameters['slug']);
+
+        $found = $this->router->findRoute('GET', '/articles/fr/190/myslug');
+        static::assertFalse($found);
+
+        $found = $this->router->findRoute('GET', '/articles/fr/mmmm/myslug');
+        static::assertFalse($found);
     }
 
     public function testFindRouteWithParametersAndSimpleRegexOnItNotFound()
@@ -216,8 +223,23 @@ class RouterTest extends TestCase
         static::assertSame('en', $parameters['locale']);
         static::assertSame('2004', $parameters['year']);
         static::assertSame('myotherslug', $parameters['slug']);
+
+        $found = $this->router->findRoute('GET', '/articles/192.1/en/2004/myotherslug?qsa=asq');
+        static::assertFalse($found);
     }
-    
+
+    public function testFindRouteWithParametersAndSimpleInlineRegex()
+    {
+        $route = new Route('GET', '/articles/{locale:fr|jp}/{slug}', null);
+        $this->router->addRoute($route);
+
+        $found = $this->router->findRoute('GET', '/articles/en/myslug');
+        static::assertFalse($found);
+
+        $found = $this->router->findRoute('GET', '/articles/fr/myslug');
+        static::assertTrue($found);
+    }
+
     public function testHandleWithClosureMatch()
     {
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/handleme');
@@ -676,7 +698,159 @@ class RouterTest extends TestCase
         static::assertEquals('/jp/postname', $urls[3]);
         static::assertEquals('/{lang}-{id}', $urls[4]);
         static::assertNull($urls[5]);
+    }
+
+    public function testSetHost()
+    {
+        $host = 'api.toto.com';
+        $route = new Route('GET', '/abc', null);
+        $route->setHost($host);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['SERVER_NAME' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
         
+        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+    }
+
+    public function testSetHostPlaceholder()
+    {
+        $host = '{subdomain}.toto.com';
+        $route = new Route('GET', '/abc', null);
+        $route->setHost($host);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'backoffice.tata.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'beta.backoffice.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+    }
+
+    public function testSetHostPlaceholderInlineConstraints()
+    {
+        $host = '{subdomain:api|backoffice}.toto.com';
+        $route = new Route('GET', '/abc', null);
+        $route->setHost($host);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'beta.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+    }
+
+    public function testSetHostAndConstraints()
+    {
+        $host = '{subdomain}.toto.com';
+        $route = new Route('GET', '/abc', null);
+        $route->setHost($host, ['subdomain' => '\d{4}']);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+    }
+
+    public function testSetHostAndConstraints2()
+    {
+        $host = '{subdomain}.toto.com';
+        $route = new Route('GET', '/abc', null);
+        $route->setHost($host);
+        $route->setHostConstraints(['subdomain' => '\d{4}']);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+    }
+
+    public function testSetGlobalHostAndConstraints()
+    {
+        $this->router->setGlobalHostConstraints(['subdomain' => '\d{4}']);
+
+        $host = '{subdomain}.toto.com';
+        $route = new Route('GET', '/abc', null);
+        $route->setHost($host);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+    }
+
+    public function testSetGlobalHostAndConstraintsAndGetInfoInRequest()
+    {
+        $this->router->setGlobalHostConstraints(['subdomain' => '\d{4}']);
+
+        $host = '{subdomain}.{domain}.{tld}';
+        $route = new Route('GET', '/abc', function($req, $next){
+            static::assertEquals('1990', $req->getAttribute('subdomain'));
+            static::assertEquals('toto', $req->getAttribute('domain'));
+            static::assertEquals('com', $req->getAttribute('tld'));
+            return (new MessageFactory())->createResponse(200, null, [], 'ok');
+        });
+        $route->setHost($host);
+        $this->router->addRoute($route);
+
+        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+        $this->router->dispatch($request);
     }
 }
 class ExampleMiddleware implements MiddlewareInterface{

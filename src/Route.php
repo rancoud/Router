@@ -30,6 +30,15 @@ class Route
     /** @var string */
     protected $name;
 
+    /** @var string */
+    protected $host;
+    
+    /** @var array */
+    protected $hostConstraints = [];
+
+    /** @var array */
+    protected $hostParameters = [];
+
     /**
      * Route constructor.
      *
@@ -98,11 +107,12 @@ class Route
      */
     public function compileRegex(array $globalConstraints): string
     {
-        $url = $this->extractInlineContraints();
+        $url = $this->extractInlineContraints($this->url, 'constraints');
 
         $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
 
         $constraints = array_merge($globalConstraints, $this->constraints);
+
         foreach ($constraints as $id => $regexRule) {
             $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
         }
@@ -111,24 +121,26 @@ class Route
     }
 
     /**
+     * @param string $string
+     * @param string $arrayName
+     *
      * @return string
      */
-    protected function extractInlineContraints(): string
+    protected function extractInlineContraints(string $string, string $arrayName): string
     {
-        $url = $this->url;
+        preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
 
-        preg_match('/\{(\w+?):(.+?)\}/', $url, $routeParameters);
-
-        array_shift($routeParameters);
-        if (count($routeParameters) > 0) {
-            foreach ($routeParameters as $key => $value) {
-                $this->constraints[$key] = $value;
+        array_shift($parameters);
+        $max = count($parameters);
+        if ($max > 0) {
+            for($i = 0; $i < $max; $i+=2){
+                $this->{$arrayName}[$parameters[$i]] = $parameters[$i+1];
             }
 
-            $url = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $url);
+            $string = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
         }
 
-        return $url;
+        return $string;
     }
 
     /**
@@ -209,5 +221,86 @@ class Route
         }
 
         return $url;
+    }
+
+    /**
+     * @param string $host
+     * @param array  $hostConstraints
+     */
+    public function setHost(string $host, array $hostConstraints = []): void
+    {
+        $this->host = $host;
+        $this->hostConstraints = $hostConstraints;
+    }
+
+    /**
+     * @param array $hostConstraints
+     */
+    public function setHostConstraints(array $hostConstraints): void
+    {
+        $this->hostConstraints = $hostConstraints;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getHost(): ?string
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param string $host
+     *
+     * @param array  $globalConstraints
+     *
+     * @return bool
+     */
+    public function isSameHost(string $host, array $globalConstraints): bool
+    {
+        if(strpos($this->host,'{') === false){
+            return $this->host === $host;
+        }
+
+        $regex = $this->extractInlineContraints($this->host, 'hostConstraints');
+        
+        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
+
+        $constraints = array_merge($globalConstraints, $this->hostConstraints);
+        foreach ($constraints as $id => $regexRule) {
+            $regex = str_replace('<' . $id . '>[^.]++', '<' . $id . '>' . $regexRule, $regex);
+        }
+        $pattern = '#^' . $regex . '$#s';
+        $matches = [];
+
+        if (preg_match($pattern, $host, $matches)) {
+            array_shift($matches);
+            $this->saveHostParameters($matches);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $hostParameters
+     */
+    protected function saveHostParameters(array $hostParameters): void
+    {
+        $this->hostParameters = [];
+
+        foreach ($hostParameters as $key => $value) {
+            if (!is_int($key)) {
+                $this->hostParameters[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getHostParameters(): array
+    {
+        return $this->hostParameters;
     }
 }
