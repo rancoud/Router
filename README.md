@@ -133,7 +133,8 @@ $config = [
         'host_constraint' => [
             'service' => 'api|backoffice|www|m',
             'tld' => 'en|jp'
-        ]
+        ],
+        'default_404' => 'callable_404'
     ],
     'routes' => [
         [

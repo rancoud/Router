@@ -574,6 +574,10 @@ class Router implements RequestHandlerInterface
 
             $this->setGlobalHostConstraints($config['router']['host_constraints']);
         }
+
+        if (array_key_exists('default_404', $config['router'])) {
+            $this->setDefault404($config['router']['default_404']);
+        }
     }
 
     /**

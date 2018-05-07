@@ -1096,6 +1096,23 @@ class RouterTest extends TestCase
         static::assertEquals(200, $response->getStatusCode());
         static::assertEquals('ok', $response->getBody());
     }
+
+    public function testDispatch404StringMiddlewareWithConfig()
+    {
+        $config = [
+            'router' => [
+                'default_404' => ExampleMiddleware::class
+            ]
+        ];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+        
+        $request = new ServerRequest('GET', '/');
+        $response = $this->router->dispatch($request);
+        static::assertNotNull($response);
+        static::assertEquals(200, $response->getStatusCode());
+        static::assertEquals('ok', $response->getBody());
+    }
 }
 class ExampleMiddleware implements MiddlewareInterface{
 
