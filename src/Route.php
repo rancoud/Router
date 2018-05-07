@@ -32,7 +32,7 @@ class Route
 
     /** @var string */
     protected $host;
-    
+
     /** @var array */
     protected $hostConstraints = [];
 
@@ -133,8 +133,8 @@ class Route
         array_shift($parameters);
         $max = count($parameters);
         if ($max > 0) {
-            for($i = 0; $i < $max; $i+=2){
-                $this->{$arrayName}[$parameters[$i]] = $parameters[$i+1];
+            for ($i = 0; $i < $max; $i += 2) {
+                $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
             }
 
             $string = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
@@ -251,19 +251,22 @@ class Route
 
     /**
      * @param string $host
-     *
      * @param array  $globalConstraints
      *
      * @return bool
      */
     public function isSameHost(string $host, array $globalConstraints): bool
     {
-        if(strpos($this->host,'{') === false){
+        if ($this->host === null) {
+            return true;
+        }
+
+        if (mb_strpos($this->host, '{') === false) {
             return $this->host === $host;
         }
 
         $regex = $this->extractInlineContraints($this->host, 'hostConstraints');
-        
+
         $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
 
         $constraints = array_merge($globalConstraints, $this->hostConstraints);
@@ -276,6 +279,7 @@ class Route
         if (preg_match($pattern, $host, $matches)) {
             array_shift($matches);
             $this->saveHostParameters($matches);
+
             return true;
         }
 

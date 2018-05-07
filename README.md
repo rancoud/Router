@@ -128,12 +128,17 @@ $config = [
         ],
         'constraints' => [
             'lang' => 'en|fr'
+        ],
+        'host' => '{service}.domain.{tld}',
+        'host_constraint' => [
+            'service' => 'api|backoffice|www|m',
+            'tld' => 'en|jp'
         ]
     ],
     'routes' => [
         [
             'methods' => ['GET'],
-            'url' => '/{id}',
+            'url' => '/articles/{id}',
             'callback' => 'route_callback',
             'constraints' => ['id' => '\w+'],
             'middlewares' => ['route_middleware1', 'route_middleware2'],
@@ -141,8 +146,17 @@ $config = [
         ],
         [
             'methods' => ['POST'],
-            'url' => '/aze',
+            'url' => '/form',
             'callback' => 'callback',
+        ],
+        [
+            'methods' => ['POST'],
+            'url' => '/api/form',
+            'callback' => 'callback',
+            'host' => 'api.domain.{tld}',
+            'host_constraint' => [
+                'tld' => 'en|jp
+            ]
         ]
     ]
 ];
@@ -171,11 +185,14 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 * setGlobalMiddlewares(middlewares: array):void  
 
 #### Global constraints
-* setGlobalParametersConstraints(constraints: array): void  
-* setGlobalHostConstraints(constraints: array): void  
+* setGlobalParametersConstraints(constraints: array):void  
+* setGlobalHostConstraints(constraints: array):void  
 
 #### Generate url for a named route
-* generateUrl(route: string, [routeParameters: array = []])  
+* generateUrl(route: string, [routeParameters: array = []]):string  
+
+#### Host constraints
+* setGlobalHost(host: string):void  
 
 ## Route Constructor
 ### Settings

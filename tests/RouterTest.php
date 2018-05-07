@@ -537,6 +537,30 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
+    public function testSetupRouterAndRoutesWithConfigArrayNoHostConstraintValidInRouterPart()
+    {
+        $config = [
+            'router' => ['host_constraints' => null]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config router/host_constraints has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayNoHostValidInRouterPart()
+    {
+        $config = [
+            'router' => ['host' => null]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config router/host has to be a string');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
     public function testSetupRouterAndRoutesWithConfigArrayNoValidRoutes()
     {
         $config = [
@@ -615,6 +639,63 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidHostInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST'],
+                    'url' => '/',
+                    'callback' => 'a',
+                    'host' => null
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/host has to be a string');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidHostConstraintsInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST'],
+                    'url' => '/',
+                    'callback' => 'a',
+                    'host_constraints' => null
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/host_constraints has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidNameInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST'],
+                    'url' => '/',
+                    'callback' => 'a',
+                    'name' => null
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/name has to be a string');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+    
     public function testSetupRouterAndRoutesWithConfigArrayNoRoutesPart()
     {
         $config = [];
@@ -700,6 +781,29 @@ class RouterTest extends TestCase
         static::assertNull($urls[5]);
     }
 
+    public function testSetGlobalHostRouter()
+    {
+        $host = 'api.toto.com';
+        $this->router->setGlobalHost($host);
+        $route = new Route('GET', '/abc', null);
+        $this->router->addRoute($route);
+
+        $request = new ServerRequest('GET', '/abc');
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['SERVER_NAME' => 'api.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+    }
+    
     public function testSetHost()
     {
         $host = 'api.toto.com';
@@ -851,6 +955,76 @@ class RouterTest extends TestCase
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
         $this->router->dispatch($request);
+    }
+
+    public function testConfigWithHostAndConstraints()
+    {
+        $config = [
+            'router' => [
+                'host' => '{subdomain:api|backoffice}.{domain}.{tld}',
+                'host_constraints' => [
+                    'domain' => '\d{4}'
+                ]
+            ],
+            'routes' => [
+                [
+                    'methods' => ['GET'],
+                    'url' => '/common',
+                    'callback' => function($req, $next){
+                        static::assertEquals('api', $req->getAttribute('subdomain'));
+                        static::assertEquals('2000', $req->getAttribute('domain'));
+                        static::assertEquals('com', $req->getAttribute('tld'));
+                        return (new MessageFactory())->createResponse(200, null, [], 'ok');
+                    },
+                    'name' => 'route0',
+                ],
+                [
+                    'methods' => ['GET'],
+                    'url' => '/special',
+                    'callback' => function($req, $next){
+                        static::assertEquals('api', $req->getAttribute('subdomain'));
+                        static::assertEquals('2000', $req->getAttribute('domain'));
+                        static::assertEquals('com', $req->getAttribute('tld'));
+                        return (new MessageFactory())->createResponse(200, null, [], 'ok');
+                    },
+                    'name' => 'route1',
+                    'host' => '{subdomain}.{domain}.{tld}',
+                    'host_constraints' => [
+                        'subdomain' => 'api',
+                        'tld' => 'com'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+
+        $router = new ReflectionClass($this->router);
+        $property = $router->getProperty('currentRoute');
+        $property->setAccessible(true);
+        
+        $serverHost = ['HTTP_HOST' => 'backoffice.2000.com'];
+        $request = new ServerRequest('GET', '/common', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+        static::assertEquals('route0', $property->getValue($this->router)->getName());
+
+        $serverHost = ['HTTP_HOST' => 'api.2000.com'];
+        $request = new ServerRequest('GET', '/special', [], null, '1.1', $serverHost);
+        static::assertTrue($this->router->findRouteRequest($request));
+        static::assertEquals('route1', $property->getValue($this->router)->getName());
+        $this->router->dispatch($request);
+
+        $serverHost = ['HTTP_HOST' => 'api.2000.fr'];
+        $request = new ServerRequest('GET', '/special', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'backoffice.2000.com'];
+        $request = new ServerRequest('GET', '/special', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
+
+        $serverHost = ['HTTP_HOST' => 'www.2000.com'];
+        $request = new ServerRequest('GET', '/special', [], null, '1.1', $serverHost);
+        static::assertFalse($this->router->findRouteRequest($request));
     }
 }
 class ExampleMiddleware implements MiddlewareInterface{

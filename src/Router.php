@@ -45,8 +45,14 @@ class Router implements RequestHandlerInterface
     /** @var string */
     protected $host;
 
+    /** @var string */
+    protected $hostRouter;
+
     /** @var array */
     protected $hostConstraints = [];
+
+    /** @var array */
+    protected $hostParameters = [];
 
     /**
      * @param Route $route
@@ -186,11 +192,11 @@ class Router implements RequestHandlerInterface
         /* @var $request \Rancoud\Http\Message\ServerRequest */
         $this->method = $request->getMethod();
         $this->url = $request->getUri()->getPath();
-        
+
         $serverParams = $request->getServerParams();
-        if(array_key_exists('HTTP_HOST', $serverParams)){
+        if (array_key_exists('HTTP_HOST', $serverParams)) {
             $this->host = $serverParams['HTTP_HOST'];
-        } else if (array_key_exists('SERVER_NAME', $serverParams)){
+        } elseif (array_key_exists('SERVER_NAME', $serverParams)) {
             $this->host = $serverParams['SERVER_NAME'];
         } else {
             $this->host = null;
@@ -202,7 +208,6 @@ class Router implements RequestHandlerInterface
     /**
      * @param string      $method
      * @param string      $url
-     *
      * @param string|null $host
      *
      * @return bool
@@ -224,15 +229,19 @@ class Router implements RequestHandlerInterface
         $this->currentRoute = null;
         $this->routeParameters = [];
 
+        if ($this->isNotSameRouterHost()) {
+            return false;
+        }
+
         foreach ($this->routes as $route) {
             if ($this->isNotSameRouteMethod($route)) {
                 continue;
             }
 
-            if($this->isNotSameHost($route)) {
+            if ($this->isNotSameRouteHost($route)) {
                 continue;
             }
-            
+
             $pattern = '#^' . $route->compileRegex($this->globalConstraints) . '$#s';
             $matches = [];
 
@@ -266,6 +275,81 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @return bool
+     */
+    protected function isNotSameRouterHost(): bool
+    {
+        if ($this->hostRouter === null) {
+            return false;
+        }
+
+        if ($this->host === null) {
+            return true;
+        }
+
+        if (mb_strpos($this->hostRouter, '{') === false) {
+            return !($this->hostRouter === $this->host);
+        }
+
+        $regex = $this->extractInlineContraints($this->hostRouter, 'hostConstraints');
+
+        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
+
+        $constraints = array_merge($this->globalConstraints, $this->hostConstraints);
+        foreach ($constraints as $id => $regexRule) {
+            $regex = str_replace('<' . $id . '>[^.]++', '<' . $id . '>' . $regexRule, $regex);
+        }
+        $pattern = '#^' . $regex . '$#s';
+        $matches = [];
+
+        if (preg_match($pattern, $this->host, $matches)) {
+            array_shift($matches);
+            $this->saveHostParameters($matches);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $hostParameters
+     */
+    protected function saveHostParameters(array $hostParameters): void
+    {
+        $this->hostParameters = [];
+
+        foreach ($hostParameters as $key => $value) {
+            if (!is_int($key)) {
+                $this->hostParameters[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * @param string $string
+     * @param string $arrayName
+     *
+     * @return string
+     */
+    protected function extractInlineContraints(string $string, string $arrayName): string
+    {
+        preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
+
+        array_shift($parameters);
+        $max = count($parameters);
+        if ($max > 0) {
+            for ($i = 0; $i < $max; $i += 2) {
+                $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
+            }
+
+            $string = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
+        }
+
+        return $string;
+    }
+
+    /**
      * @param Route $route
      *
      * @return bool
@@ -280,13 +364,13 @@ class Router implements RequestHandlerInterface
      *
      * @return bool
      */
-    protected function isNotSameHost(Route $route): bool
+    protected function isNotSameRouteHost(Route $route): bool
     {
-        if($this->host === null && $route->getHost() === null){
+        if ($this->host === null && $route->getHost() === null) {
             return false;
         }
 
-        if($this->host === null && $route->getHost() !== null){
+        if ($this->host === null && $route->getHost() !== null) {
             return true;
         }
 
@@ -322,6 +406,10 @@ class Router implements RequestHandlerInterface
      */
     public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
+        foreach ($this->hostParameters as $param => $value) {
+            $request = $request->withAttribute($param, $value);
+        }
+
         foreach ($this->currentRoute->getHostParameters() as $param => $value) {
             $request = $request->withAttribute($param, $value);
         }
@@ -411,16 +499,16 @@ class Router implements RequestHandlerInterface
      */
     protected function treatRouterConfig(array $config): void
     {
-        if (array_key_exists('router', $config) === false) {
+        if (!array_key_exists('router', $config)) {
             return;
         }
 
-        if (is_array($config['router']) === false) {
+        if (!is_array($config['router'])) {
             throw new RouterException('Config router has to be an array');
         }
 
         if (array_key_exists('middlewares', $config['router'])) {
-            if (is_array($config['router']['middlewares']) === false) {
+            if (!is_array($config['router']['middlewares'])) {
                 throw new RouterException('Config router/middlewares has to be an array');
             }
 
@@ -428,11 +516,27 @@ class Router implements RequestHandlerInterface
         }
 
         if (array_key_exists('constraints', $config['router'])) {
-            if (is_array($config['router']['constraints']) === false) {
+            if (!is_array($config['router']['constraints'])) {
                 throw new RouterException('Config router/constraints has to be an array');
             }
 
             $this->setGlobalParametersConstraints($config['router']['constraints']);
+        }
+
+        if (array_key_exists('host', $config['router'])) {
+            if (!is_string($config['router']['host'])) {
+                throw new RouterException('Config router/host has to be a string');
+            }
+
+            $this->setGlobalHost($config['router']['host']);
+        }
+
+        if (array_key_exists('host_constraints', $config['router'])) {
+            if (!is_array($config['router']['host_constraints'])) {
+                throw new RouterException('Config router/host_constraints has to be an array');
+            }
+
+            $this->setGlobalHostConstraints($config['router']['host_constraints']);
         }
     }
 
@@ -443,24 +547,24 @@ class Router implements RequestHandlerInterface
      */
     protected function treatRoutesConfig(array $config): void
     {
-        if (array_key_exists('routes', $config) === false) {
+        if (!array_key_exists('routes', $config)) {
             return;
         }
 
-        if (is_array($config['routes']) === false) {
+        if (!is_array($config['routes'])) {
             throw new RouterException('Config routes has to be an array');
         }
 
         foreach ($config['routes'] as $route) {
-            if (array_key_exists('methods', $route) === false) {
+            if (!array_key_exists('methods', $route)) {
                 throw new RouterException('Config routes/methods is mandatory');
             }
 
-            if (array_key_exists('url', $route) === false) {
+            if (!array_key_exists('url', $route)) {
                 throw new RouterException('Config routes/url is mandatory');
             }
 
-            if (array_key_exists('callback', $route) === false) {
+            if (!array_key_exists('callback', $route)) {
                 throw new RouterException('Config routes/callback is mandatory');
             }
 
@@ -471,7 +575,7 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('middlewares', $route)) {
-                if (is_array($route['middlewares']) === false) {
+                if (!is_array($route['middlewares'])) {
                     throw new RouterException('Config routes/middlewares has to be an array');
                 }
 
@@ -481,7 +585,27 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('name', $route)) {
+                if (!is_string($route['name'])) {
+                    throw new RouterException('Config routes/name has to be a string');
+                }
+
                 $newRoute->setName($route['name']);
+            }
+
+            if (array_key_exists('host', $route)) {
+                if (!is_string($route['host'])) {
+                    throw new RouterException('Config routes/host has to be a string');
+                }
+
+                $newRoute->setHost($route['host']);
+            }
+
+            if (array_key_exists('host_constraints', $route)) {
+                if (!is_array($route['host_constraints'])) {
+                    throw new RouterException('Config routes/host_constraints has to be an array');
+                }
+
+                $newRoute->setHostConstraints($route['host_constraints']);
             }
 
             $this->addRoute($newRoute);
@@ -495,7 +619,7 @@ class Router implements RequestHandlerInterface
     {
         $this->globalConstraints = $constraints;
     }
-    
+
     /**
      * @param string $routeName
      * @param array  $routeParameters
@@ -520,5 +644,13 @@ class Router implements RequestHandlerInterface
     public function setGlobalHostConstraints(array $constraints): void
     {
         $this->hostConstraints = $constraints;
+    }
+
+    /**
+     * @param string $host
+     */
+    public function setGlobalHost(string $host): void
+    {
+        $this->hostRouter = $host;
     }
 }
