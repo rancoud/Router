@@ -194,6 +194,9 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 #### Host constraints
 * setGlobalHost(host: string):void  
 
+#### Default 404
+* setDefault404(callback: mixed):\Psr\Http\Message\Response  
+
 ## Route Constructor
 ### Settings
 #### Mandatory

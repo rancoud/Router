@@ -262,21 +262,6 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testHandleWithClosureNext()
-    {
-        $request = (new ServerRequestFactory())->createServerRequest('GET', '/handleme');
-        $this->router->get('/handleme', function ($request, $next) {
-            return $next($request);
-        });
-        $found = $this->router->findRouteRequest($request);
-        static::assertTrue($found);
-
-        $response = $this->router->dispatch($request);
-        static::assertNotNull($response);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('', $response->getBody());
-    }
-
     public function testHandleWithMiddleware()
     {
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/handleme');
@@ -1025,6 +1010,91 @@ class RouterTest extends TestCase
         $serverHost = ['HTTP_HOST' => 'www.2000.com'];
         $request = new ServerRequest('GET', '/special', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
+    }
+
+    public function testDispatchNoRouteFound()
+    {
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('No route found to dispatch');
+        
+        $request = new ServerRequest('GET', '/');
+        $this->router->dispatch($request);
+    }
+
+    public function testDispatch404()
+    {
+        $request = new ServerRequest('GET', '/');
+        $this->router->setDefault404(function($req, $next){
+            return (new MessageFactory())->createResponse(404, null, [], '404');
+        });
+        $response = $this->router->dispatch($request);
+        static::assertNotNull($response);
+        static::assertEquals(404, $response->getStatusCode());
+        static::assertEquals('404', $response->getBody());
+    }
+    
+    public function testDispatch404Error()
+    {
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('The default404 is invalid');
+
+        $this->router->setDefault404(4545);
+        $request = new ServerRequest('GET', '/');
+        $this->router->dispatch($request);
+    }
+
+    public function testHandleWithClosureNext()
+    {
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Middleware is invalid: NULL');
+
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
+        $this->router->get('/', null);
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+
+
+        $this->router->dispatch($request);
+    }
+
+    public function testDispatch404AfterAllMiddlewarePassed()
+    {
+        $request = new ServerRequest('GET', '/');
+        $this->router->setDefault404(function($req, $next){
+            return (new MessageFactory())->createResponse(404, null, [], '404');
+        });
+        $this->router->get('/', function($req, $next){
+            return $next($req);
+        });
+        $this->router->findRouteRequest($request);
+        $response = $this->router->dispatch($request);
+        static::assertNotNull($response);
+        static::assertEquals(404, $response->getStatusCode());
+        static::assertEquals('404', $response->getBody());
+    }
+
+    public function testDispatch404Middleware()
+    {
+        $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
+        $response = (new MessageFactory())->createResponse(404, null, [], '404');
+        $middleware->method('process')->willReturn($response);
+        
+        $request = new ServerRequest('GET', '/');
+        $this->router->setDefault404($middleware);
+        $response = $this->router->dispatch($request);
+        static::assertNotNull($response);
+        static::assertEquals(404, $response->getStatusCode());
+        static::assertEquals('404', $response->getBody());
+    }
+
+    public function testDispatch404StringMiddleware()
+    {
+        $request = new ServerRequest('GET', '/');
+        $this->router->setDefault404(ExampleMiddleware::class);
+        $response = $this->router->dispatch($request);
+        static::assertNotNull($response);
+        static::assertEquals(200, $response->getStatusCode());
+        static::assertEquals('ok', $response->getBody());
     }
 }
 class ExampleMiddleware implements MiddlewareInterface{

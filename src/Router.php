@@ -8,7 +8,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Rancoud\Http\Message\Factory\MessageFactory;
 
 /**
  * Class Router.
@@ -53,6 +52,9 @@ class Router implements RequestHandlerInterface
 
     /** @var array */
     protected $hostParameters = [];
+
+    /** @var mixed */
+    protected $default404;
 
     /**
      * @param Route $route
@@ -402,10 +404,16 @@ class Router implements RequestHandlerInterface
     /**
      * @param ServerRequestInterface $request
      *
+     * @throws RouterException
+     *
      * @return ResponseInterface
      */
     public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
+        if ($this->currentRoute === null) {
+            return $this->generate404($request);
+        }
+
         foreach ($this->hostParameters as $param => $value) {
             $request = $request->withAttribute($param, $value);
         }
@@ -423,6 +431,29 @@ class Router implements RequestHandlerInterface
         return $this->handle($request);
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @throws RouterException
+     *
+     * @return ResponseInterface
+     */
+    protected function generate404(ServerRequestInterface $request): ResponseInterface
+    {
+        if ($this->default404 !== null) {
+            if (is_callable($this->default404)) {
+                return call_user_func_array($this->default404, [$request, [$this, 'handle']]);
+            } elseif ($this->default404 instanceof MiddlewareInterface) {
+                return $this->default404->process($request, $this);
+            } elseif (is_string($this->default404)) {
+                return (new $this->default404())->process($request, $this);
+            }
+
+            throw new RouterException('The default404 is invalid');
+        }
+        throw new RouterException('No route found to dispatch');
+    }
+
     protected function pushMiddlewaresToApplyInPipe(): void
     {
         $this->currentMiddlewareInPipeIndex = 0;
@@ -434,10 +465,16 @@ class Router implements RequestHandlerInterface
     /**
      * @param ServerRequestInterface $request
      *
+     * @throws RouterException
+     *
      * @return ResponseInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        if (!array_key_exists($this->currentMiddlewareInPipeIndex, $this->middlewaresInPipe)) {
+            return $this->generate404($request);
+        }
+
         $middleware = $this->getMiddlewareInPipe();
         if (is_callable($middleware)) {
             return call_user_func_array($middleware, [$request, [$this, 'handle']]);
@@ -446,8 +483,7 @@ class Router implements RequestHandlerInterface
         } elseif (is_string($middleware)) {
             return (new $middleware())->process($request, $this);
         }
-
-        return (new MessageFactory())->createResponse(404);
+        throw new RouterException(sprintf('Middleware is invalid: %s', gettype($middleware)));
     }
 
     /**
@@ -652,5 +688,13 @@ class Router implements RequestHandlerInterface
     public function setGlobalHost(string $host): void
     {
         $this->hostRouter = $host;
+    }
+
+    /**
+     * @param $callback
+     */
+    public function setDefault404($callback): void
+    {
+        $this->default404 = $callback;
     }
 }
