@@ -1113,6 +1113,79 @@ class RouterTest extends TestCase
         static::assertEquals(200, $response->getStatusCode());
         static::assertEquals('ok', $response->getBody());
     }
+
+    public function testRouterceptionRouterInRouteInRouter()
+    {
+        $subRouter1 = new Router();
+        $subRouter1->any('/api/books/{id}', function ($req, $next){
+            return (new MessageFactory())->createResponse(209, null, [], 'testRouterception books');
+        });
+
+        $subRouter2 = new Router();
+        $subRouter2->any('/api/peoples/{id}', function ($req, $next){
+            return (new MessageFactory())->createResponse(204, null, [], 'testRouterception peoples');
+        });
+        
+        $this->router->any('/api/books/{id}', $subRouter1);
+        $this->router->any('/api/peoples/{id}', $subRouter2);
+
+        $request = new ServerRequest('GET', '/api/books/14');
+
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(209, $response->getStatusCode());
+        static::assertEquals('testRouterception books', $response->getBody());
+
+        $request = new ServerRequest('GET', '/api/peoples/14');
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(204, $response->getStatusCode());
+        static::assertEquals('testRouterception peoples', $response->getBody());
+    }
+
+    public function testRouterception2RouterInMiddleware()
+    {
+        $subRouter1 = new Router();
+        $subRouter1->any('/api/books/{id}', function ($req, $next){
+            return (new MessageFactory())->createResponse(209, null, [], 'testRouterception books');
+        });
+
+        $subRouter2 = new Router();
+        $subRouter2->any('/api/peoples/{id}', function ($req, $next){
+            return (new MessageFactory())->createResponse(204, null, [], 'testRouterception peoples');
+        });
+
+        $this->router->addGlobalMiddleware($subRouter1);
+        $this->router->addGlobalMiddleware($subRouter2);
+        
+        $this->router->any('/api/{items}/{id}', function ($req, $next){
+            return (new MessageFactory())->createResponse(404, null, [], 'no match');
+        });
+
+        $request = new ServerRequest('GET', '/api/books/14');
+
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(209, $response->getStatusCode());
+        static::assertEquals('testRouterception books', $response->getBody());
+
+        $request = new ServerRequest('GET', '/api/peoples/14');
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(204, $response->getStatusCode());
+        static::assertEquals('testRouterception peoples', $response->getBody());
+
+        $request = new ServerRequest('GET', '/api/bottles/14');
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(404, $response->getStatusCode());
+        static::assertEquals('no match', $response->getBody());
+    }
 }
 class ExampleMiddleware implements MiddlewareInterface{
 

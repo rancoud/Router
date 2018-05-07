@@ -482,6 +482,12 @@ class Router implements RequestHandlerInterface
             return $middleware->process($request, $this);
         } elseif (is_string($middleware)) {
             return (new $middleware())->process($request, $this);
+        } elseif ($middleware instanceof self) {
+            if ($middleware->findRouteRequest($request)) {
+                return $middleware->dispatch($request);
+            }
+
+            return $this->handle($request);
         }
         throw new RouterException(sprintf('Middleware is invalid: %s', gettype($middleware)));
     }

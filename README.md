@@ -90,6 +90,37 @@ $route->addMiddleware(function ($request, $next) {});
 $router->addGlobalMiddleware(function ($request, $next) {
     $next($request);
 });
+
+// you can add an instance of Router as a middleware
+$subRouter1 = new Router();
+$subRouter1->any('/api/books/{id}', function ($req, $next){
+    return (new MessageFactory())->createResponse(200, null, [], 'testRouterception books');
+});
+
+$subRouter2 = new Router();
+$subRouter2->any('/api/peoples/{id}', function ($req, $next){
+    return (new MessageFactory())->createResponse(200, null, [], 'testRouterception peoples');
+});
+
+$router->addGlobalMiddleware($subRouter1);
+$router->addGlobalMiddleware($subRouter2);
+```
+
+#### Router in Route in Router
+```php
+// you can add an instance of Router in a Route callback
+$subRouter1 = new Router();
+$subRouter1->any('/api/books/{id}', function ($req, $next){
+    return (new MessageFactory())->createResponse(200, null, [], 'testRouterception books');
+});
+
+$subRouter2 = new Router();
+$subRouter2->any('/api/peoples/{id}', function ($req, $next){
+    return (new MessageFactory())->createResponse(200, null, [], 'testRouterception peoples');
+});
+
+$router->any('/api/books/{id}', $subRouter1);
+$router->any('/api/peoples/{id}', $subRouter2);
 ```
 
 ## Router Methods
