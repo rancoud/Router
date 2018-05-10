@@ -1259,6 +1259,53 @@ class RouterTest extends TestCase
         static::assertSame(3, $parameters['offset']);
         static::assertSame(4, $parameters['count']);
     }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidOptionalParametersInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['POST'],
+                    'url' => '/',
+                    'callback' => 'a',
+                    'optionals_parameters' => null
+                ]
+            ]
+        ];
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Config routes/optionals_parameters has to be an array');
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+    }
+
+    public function testSetupRouterAndRoutesWithConfigArrayWithOptionalParametersInRoutesPart()
+    {
+        $config = [
+            'routes' => [
+                [
+                    'methods' => ['GET'],
+                    'url' => '/{items}',
+                    'callback' => 'a',
+                    'optionals_parameters' => ['items' => 'azerty']
+                ]
+            ]
+        ];
+
+        $this->router->setupRouterAndRoutesWithConfigArray($config);
+
+        $found = $this->router->findRoute('GET', '/456');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame('456', $parameters['items']);
+
+        $found = $this->router->findRoute('GET', '/');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame('azerty', $parameters['items']);
+    }
 }
 class ExampleMiddleware implements MiddlewareInterface{
 

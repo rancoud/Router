@@ -661,6 +661,14 @@ class Router implements RequestHandlerInterface
                 $newRoute->setHostConstraints($route['host_constraints']);
             }
 
+            if (array_key_exists('optionals_parameters', $route)) {
+                if (!is_array($route['optionals_parameters'])) {
+                    throw new RouterException('Config routes/optionals_parameters has to be an array');
+                }
+
+                $newRoute->setOptionalsParameters($route['optionals_parameters']);
+            }
+
             $this->addRoute($newRoute);
         }
     }
