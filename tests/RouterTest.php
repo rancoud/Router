@@ -11,7 +11,6 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Rancoud\Http\Message\Factory\MessageFactory;
 use Rancoud\Http\Message\Factory\ServerRequestFactory;
-use Rancoud\Http\Message\Request;
 use Rancoud\Http\Message\ServerRequest;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
@@ -1185,6 +1184,80 @@ class RouterTest extends TestCase
         $response = $this->router->dispatch($request);
         static::assertEquals(404, $response->getStatusCode());
         static::assertEquals('no match', $response->getBody());
+    }
+
+    public function testFindRouteWithOneOptionalsParameters()
+    {
+        $this->router->get('/{params}', function () {
+        })->setOptionalsParameters(['params' => 1]);
+        $found = $this->router->findRoute('GET', '/aze');
+        static::assertTrue($found);
+        $parameters = $this->router->getRouteParameters();
+        static::assertTrue(array_key_exists('params', $parameters));
+        static::assertSame('aze', $parameters['params']);
+    }
+
+    public function testFindRouteWithoutOneOptionalsParameters()
+    {
+        $this->router->get('/{params}', function () {
+        })->setOptionalsParameters(['params' => 1]);
+        $found = $this->router->findRoute('GET', '/');
+        static::assertTrue($found);
+        $parameters = $this->router->getRouteParameters();
+        static::assertTrue(array_key_exists('params', $parameters));
+        static::assertSame(1, $parameters['params']);
+    }
+
+    public function testFindRouteWithMultiOptionalsParameters()
+    {
+        $this->router->get('/{items}/{category}/{offset}/{count}', function () {
+        })->setOptionalsParameters(
+            ['items' => 1, 'category' => 2, 'offset' => 3, 'count' => 4]
+        );
+        $found = $this->router->findRoute('GET', '/aze/rty/5/8');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame('aze', $parameters['items']);
+        static::assertSame('rty', $parameters['category']);
+        static::assertSame('5', $parameters['offset']);
+        static::assertSame('8', $parameters['count']);
+        
+        $found = $this->router->findRoute('GET', '/aze/rty/5');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame('aze', $parameters['items']);
+        static::assertSame('rty', $parameters['category']);
+        static::assertSame('5', $parameters['offset']);
+        static::assertSame(4, $parameters['count']);
+        
+        $found = $this->router->findRoute('GET', '/aze/rty');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame('aze', $parameters['items']);
+        static::assertSame('rty', $parameters['category']);
+        static::assertSame(3, $parameters['offset']);
+        static::assertSame(4, $parameters['count']);
+        
+        $found = $this->router->findRoute('GET', '/aze');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame('aze', $parameters['items']);
+        static::assertSame(2, $parameters['category']);
+        static::assertSame(3, $parameters['offset']);
+        static::assertSame(4, $parameters['count']);
+
+        $found = $this->router->findRoute('GET', '/');
+        static::assertTrue($found);
+
+        $parameters = $this->router->getRouteParameters();
+        static::assertSame(1, $parameters['items']);
+        static::assertSame(2, $parameters['category']);
+        static::assertSame(3, $parameters['offset']);
+        static::assertSame(4, $parameters['count']);
     }
 }
 class ExampleMiddleware implements MiddlewareInterface{

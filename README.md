@@ -77,6 +77,13 @@ $router->get('/article/{lang}', function ($request, $next) {});
 $router->get('/news/{lang}', function ($request, $next) {})->setParametersConstraints(['lang' => 'jp']);
 ```
 
+You can use on each route an optional parameters.  
+The parameters `{page}` will be replace with the value `1` if it is not present  
+```php
+$route = new Route('GET', '/{id}/{page}', function ($request, $next) {});
+$route->setOptionalsParameters(['page' => 1]);
+```
+
 ### Middlewares
 ```php
 // global middleware for router
@@ -249,6 +256,8 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 * setParametersConstraints(constraints: array):void  
 * getParametersConstraints():array  
 * compileRegex():string  
+* setOptionalsParameters(optionalsParameters: array):void  
+* getOptionalsParameters():array  
 #### Callback
 * getCallback():mixed  
 #### Middlewares

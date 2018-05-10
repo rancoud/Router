@@ -249,7 +249,7 @@ class Router implements RequestHandlerInterface
 
             if (preg_match($pattern, $this->url, $matches)) {
                 array_shift($matches);
-                $this->saveRouteParameters($matches);
+                $this->saveRouteParameters($matches, $route->getOptionalsParameters());
 
                 $this->currentRoute = $route;
 
@@ -381,13 +381,20 @@ class Router implements RequestHandlerInterface
 
     /**
      * @param array $routeParameters
+     * @param array $optionalsParameters
      */
-    protected function saveRouteParameters(array $routeParameters): void
+    protected function saveRouteParameters(array $routeParameters, array $optionalsParameters): void
     {
         $this->routeParameters = [];
 
         foreach ($routeParameters as $key => $value) {
             if (!is_int($key)) {
+                $this->routeParameters[$key] = $value;
+            }
+        }
+
+        foreach ($optionalsParameters as $key => $value) {
+            if (!array_key_exists($key, $this->routeParameters)) {
                 $this->routeParameters[$key] = $value;
             }
         }

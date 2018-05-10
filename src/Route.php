@@ -39,6 +39,9 @@ class Route
     /** @var array */
     protected $hostParameters = [];
 
+    /** @var array */
+    protected $optionalsParameters = [];
+
     /**
      * Route constructor.
      *
@@ -112,6 +115,10 @@ class Route
         $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
 
         $constraints = array_merge($globalConstraints, $this->constraints);
+
+        foreach ($this->optionalsParameters as $key => $defaultValue) {
+            $regex = str_replace('(?P<' . $key . '>[^/]++)', '?(?P<' . $key . '>[^/]++)?', $regex);
+        }
 
         foreach ($constraints as $id => $regexRule) {
             $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
@@ -306,5 +313,21 @@ class Route
     public function getHostParameters(): array
     {
         return $this->hostParameters;
+    }
+
+    /**
+     * @param $optionalsParameters
+     */
+    public function setOptionalsParameters($optionalsParameters): void
+    {
+        $this->optionalsParameters = $optionalsParameters;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptionalsParameters(): array
+    {
+        return $this->optionalsParameters;
     }
 }
