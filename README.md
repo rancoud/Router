@@ -196,6 +196,14 @@ $config = [
             'host_constraint' => [
                 'tld' => 'en|jp
             ]
+        ],
+        [
+            'methods' => ['GET'],
+            'url' => '/blog/{page}',
+            'callback' => 'callback',
+            'optionals_parameters' => [
+                'page' => '1'
+            ]
         ]
     ]
 ];
