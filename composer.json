@@ -17,7 +17,7 @@
     },
     "require": {
         "php": ">=7.2.0",
-        "rancoud/http": "dev-master"
+        "rancoud/http": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~6.2.0",
