@@ -194,7 +194,7 @@ $config = [
             'callback' => 'callback',
             'host' => 'api.domain.{tld}',
             'host_constraint' => [
-                'tld' => 'en|jp
+                'tld' => 'en|jp'
             ]
         ],
         [

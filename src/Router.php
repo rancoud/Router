@@ -322,7 +322,7 @@ class Router implements RequestHandlerInterface
         $this->hostParameters = [];
 
         foreach ($hostParameters as $key => $value) {
-            if (!is_int($key)) {
+            if (!\is_int($key)) {
                 $this->hostParameters[$key] = $value;
             }
         }
@@ -339,7 +339,7 @@ class Router implements RequestHandlerInterface
         preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
 
         array_shift($parameters);
-        $max = count($parameters);
+        $max = \count($parameters);
         if ($max > 0) {
             for ($i = 0; $i < $max; $i += 2) {
                 $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
@@ -358,7 +358,7 @@ class Router implements RequestHandlerInterface
      */
     protected function isNotSameRouteMethod(Route $route): bool
     {
-        return !in_array($this->method, $route->getMethods(), true);
+        return !\in_array($this->method, $route->getMethods(), true);
     }
 
     /**
@@ -388,7 +388,7 @@ class Router implements RequestHandlerInterface
         $this->routeParameters = [];
 
         foreach ($routeParameters as $key => $value) {
-            if (!is_int($key)) {
+            if (!\is_int($key)) {
                 $this->routeParameters[$key] = $value;
             }
         }
@@ -448,11 +448,11 @@ class Router implements RequestHandlerInterface
     protected function generate404(ServerRequestInterface $request): ResponseInterface
     {
         if ($this->default404 !== null) {
-            if (is_callable($this->default404)) {
-                return call_user_func_array($this->default404, [$request, [$this, 'handle']]);
+            if (\is_callable($this->default404)) {
+                return \call_user_func_array($this->default404, [$request, [$this, 'handle']]);
             } elseif ($this->default404 instanceof MiddlewareInterface) {
                 return $this->default404->process($request, $this);
-            } elseif (is_string($this->default404)) {
+            } elseif (\is_string($this->default404)) {
                 return (new $this->default404())->process($request, $this);
             }
 
@@ -483,11 +483,11 @@ class Router implements RequestHandlerInterface
         }
 
         $middleware = $this->getMiddlewareInPipe();
-        if (is_callable($middleware)) {
-            return call_user_func_array($middleware, [$request, [$this, 'handle']]);
+        if (\is_callable($middleware)) {
+            return \call_user_func_array($middleware, [$request, [$this, 'handle']]);
         } elseif ($middleware instanceof MiddlewareInterface) {
             return $middleware->process($request, $this);
-        } elseif (is_string($middleware)) {
+        } elseif (\is_string($middleware)) {
             return (new $middleware())->process($request, $this);
         } elseif ($middleware instanceof self) {
             if ($middleware->findRouteRequest($request)) {
@@ -496,7 +496,7 @@ class Router implements RequestHandlerInterface
 
             return $this->handle($request);
         }
-        throw new RouterException(sprintf('Middleware is invalid: %s', gettype($middleware)));
+        throw new RouterException(sprintf('Middleware is invalid: %s', \gettype($middleware)));
     }
 
     /**
@@ -552,12 +552,12 @@ class Router implements RequestHandlerInterface
             return;
         }
 
-        if (!is_array($config['router'])) {
+        if (!\is_array($config['router'])) {
             throw new RouterException('Config router has to be an array');
         }
 
         if (array_key_exists('middlewares', $config['router'])) {
-            if (!is_array($config['router']['middlewares'])) {
+            if (!\is_array($config['router']['middlewares'])) {
                 throw new RouterException('Config router/middlewares has to be an array');
             }
 
@@ -565,7 +565,7 @@ class Router implements RequestHandlerInterface
         }
 
         if (array_key_exists('constraints', $config['router'])) {
-            if (!is_array($config['router']['constraints'])) {
+            if (!\is_array($config['router']['constraints'])) {
                 throw new RouterException('Config router/constraints has to be an array');
             }
 
@@ -573,7 +573,7 @@ class Router implements RequestHandlerInterface
         }
 
         if (array_key_exists('host', $config['router'])) {
-            if (!is_string($config['router']['host'])) {
+            if (!\is_string($config['router']['host'])) {
                 throw new RouterException('Config router/host has to be a string');
             }
 
@@ -581,7 +581,7 @@ class Router implements RequestHandlerInterface
         }
 
         if (array_key_exists('host_constraints', $config['router'])) {
-            if (!is_array($config['router']['host_constraints'])) {
+            if (!\is_array($config['router']['host_constraints'])) {
                 throw new RouterException('Config router/host_constraints has to be an array');
             }
 
@@ -604,7 +604,7 @@ class Router implements RequestHandlerInterface
             return;
         }
 
-        if (!is_array($config['routes'])) {
+        if (!\is_array($config['routes'])) {
             throw new RouterException('Config routes has to be an array');
         }
 
@@ -628,7 +628,7 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('middlewares', $route)) {
-                if (!is_array($route['middlewares'])) {
+                if (!\is_array($route['middlewares'])) {
                     throw new RouterException('Config routes/middlewares has to be an array');
                 }
 
@@ -638,7 +638,7 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('name', $route)) {
-                if (!is_string($route['name'])) {
+                if (!\is_string($route['name'])) {
                     throw new RouterException('Config routes/name has to be a string');
                 }
 
@@ -646,7 +646,7 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('host', $route)) {
-                if (!is_string($route['host'])) {
+                if (!\is_string($route['host'])) {
                     throw new RouterException('Config routes/host has to be a string');
                 }
 
@@ -654,7 +654,7 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('host_constraints', $route)) {
-                if (!is_array($route['host_constraints'])) {
+                if (!\is_array($route['host_constraints'])) {
                     throw new RouterException('Config routes/host_constraints has to be an array');
                 }
 
@@ -662,7 +662,7 @@ class Router implements RequestHandlerInterface
             }
 
             if (array_key_exists('optionals_parameters', $route)) {
-                if (!is_array($route['optionals_parameters'])) {
+                if (!\is_array($route['optionals_parameters'])) {
                     throw new RouterException('Config routes/optionals_parameters has to be an array');
                 }
 

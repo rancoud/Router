@@ -66,14 +66,14 @@ class Route
      */
     protected function setMethods($methods): void
     {
-        if (is_string($methods)) {
+        if (\is_string($methods)) {
             $methods = [$methods];
-        } elseif (!is_array($methods)) {
+        } elseif (!\is_array($methods)) {
             throw new RouterException('Method invalid');
         }
 
         foreach ($methods as $method) {
-            if (!in_array($method, Request::$methods, true)) {
+            if (!\in_array($method, Request::$methods, true)) {
                 throw new RouterException('Method invalid: ' . $method);
             }
         }
@@ -138,7 +138,7 @@ class Route
         preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
 
         array_shift($parameters);
-        $max = count($parameters);
+        $max = \count($parameters);
         if ($max > 0) {
             for ($i = 0; $i < $max; $i += 2) {
                 $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
@@ -301,7 +301,7 @@ class Route
         $this->hostParameters = [];
 
         foreach ($hostParameters as $key => $value) {
-            if (!is_int($key)) {
+            if (!\is_int($key)) {
                 $this->hostParameters[$key] = $value;
             }
         }
