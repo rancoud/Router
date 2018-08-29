@@ -88,7 +88,7 @@ class Route
      */
     protected function setUrl(string $url): void
     {
-        if (mb_strlen($url) < 1) {
+        if (\mb_strlen($url) < 1) {
             throw new RouterException('Empty url');
         }
 
@@ -112,16 +112,16 @@ class Route
     {
         $url = $this->extractInlineContraints($this->url, 'constraints');
 
-        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
+        $regex = \preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
 
-        $constraints = array_merge($globalConstraints, $this->constraints);
+        $constraints = \array_merge($globalConstraints, $this->constraints);
 
         foreach ($this->optionalsParameters as $key => $defaultValue) {
-            $regex = str_replace('(?P<' . $key . '>[^/]++)', '?(?P<' . $key . '>[^/]++)?', $regex);
+            $regex = \str_replace('(?P<' . $key . '>[^/]++)', '?(?P<' . $key . '>[^/]++)?', $regex);
         }
 
         foreach ($constraints as $id => $regexRule) {
-            $regex = str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
+            $regex = \str_replace('<' . $id . '>[^/]++', '<' . $id . '>' . $regexRule, $regex);
         }
 
         return $regex;
@@ -135,16 +135,16 @@ class Route
      */
     protected function extractInlineContraints(string $string, string $arrayName): string
     {
-        preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
+        \preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
 
-        array_shift($parameters);
+        \array_shift($parameters);
         $max = \count($parameters);
         if ($max > 0) {
             for ($i = 0; $i < $max; $i += 2) {
                 $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
             }
 
-            $string = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
+            $string = \preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
         }
 
         return $string;
@@ -222,9 +222,9 @@ class Route
     public function generateUrl(array $routeParameters = []): string
     {
         $url = $this->getUrl();
-        $url = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $url);
+        $url = \preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $url);
         foreach ($routeParameters as $parameter => $value) {
-            $url = str_replace('{' . $parameter . '}', $value, $url);
+            $url = \str_replace('{' . $parameter . '}', $value, $url);
         }
 
         return $url;
@@ -268,23 +268,23 @@ class Route
             return true;
         }
 
-        if (mb_strpos($this->host, '{') === false) {
+        if (\mb_strpos($this->host, '{') === false) {
             return $this->host === $host;
         }
 
         $regex = $this->extractInlineContraints($this->host, 'hostConstraints');
 
-        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
+        $regex = \preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
 
-        $constraints = array_merge($globalConstraints, $this->hostConstraints);
+        $constraints = \array_merge($globalConstraints, $this->hostConstraints);
         foreach ($constraints as $id => $regexRule) {
-            $regex = str_replace('<' . $id . '>[^.]++', '<' . $id . '>' . $regexRule, $regex);
+            $regex = \str_replace('<' . $id . '>[^.]++', '<' . $id . '>' . $regexRule, $regex);
         }
         $pattern = '#^' . $regex . '$#s';
         $matches = [];
 
-        if (preg_match($pattern, $host, $matches)) {
-            array_shift($matches);
+        if (\preg_match($pattern, $host, $matches)) {
+            \array_shift($matches);
             $this->saveHostParameters($matches);
 
             return true;

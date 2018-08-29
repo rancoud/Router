@@ -196,9 +196,9 @@ class Router implements RequestHandlerInterface
         $this->url = $request->getUri()->getPath();
 
         $serverParams = $request->getServerParams();
-        if (array_key_exists('HTTP_HOST', $serverParams)) {
+        if (\array_key_exists('HTTP_HOST', $serverParams)) {
             $this->host = $serverParams['HTTP_HOST'];
-        } elseif (array_key_exists('SERVER_NAME', $serverParams)) {
+        } elseif (\array_key_exists('SERVER_NAME', $serverParams)) {
             $this->host = $serverParams['SERVER_NAME'];
         } else {
             $this->host = null;
@@ -247,8 +247,8 @@ class Router implements RequestHandlerInterface
             $pattern = '#^' . $route->compileRegex($this->globalConstraints) . '$#s';
             $matches = [];
 
-            if (preg_match($pattern, $this->url, $matches)) {
-                array_shift($matches);
+            if (\preg_match($pattern, $this->url, $matches)) {
+                \array_shift($matches);
                 $this->saveRouteParameters($matches, $route->getOptionalsParameters());
 
                 $this->currentRoute = $route;
@@ -267,10 +267,10 @@ class Router implements RequestHandlerInterface
      */
     protected function removeQueryFromUrl(string $url): string
     {
-        $queryPathPosition = mb_strpos($url, '?');
+        $queryPathPosition = \mb_strpos($url, '?');
 
         if ($queryPathPosition !== false) {
-            return mb_substr($url, 0, $queryPathPosition);
+            return \mb_substr($url, 0, $queryPathPosition);
         }
 
         return $url;
@@ -289,23 +289,23 @@ class Router implements RequestHandlerInterface
             return true;
         }
 
-        if (mb_strpos($this->hostRouter, '{') === false) {
+        if (\mb_strpos($this->hostRouter, '{') === false) {
             return !($this->hostRouter === $this->host);
         }
 
         $regex = $this->extractInlineContraints($this->hostRouter, 'hostConstraints');
 
-        $regex = preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
+        $regex = \preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
 
-        $constraints = array_merge($this->globalConstraints, $this->hostConstraints);
+        $constraints = \array_merge($this->globalConstraints, $this->hostConstraints);
         foreach ($constraints as $id => $regexRule) {
-            $regex = str_replace('<' . $id . '>[^.]++', '<' . $id . '>' . $regexRule, $regex);
+            $regex = \str_replace('<' . $id . '>[^.]++', '<' . $id . '>' . $regexRule, $regex);
         }
         $pattern = '#^' . $regex . '$#s';
         $matches = [];
 
-        if (preg_match($pattern, $this->host, $matches)) {
-            array_shift($matches);
+        if (\preg_match($pattern, $this->host, $matches)) {
+            \array_shift($matches);
             $this->saveHostParameters($matches);
 
             return false;
@@ -336,16 +336,16 @@ class Router implements RequestHandlerInterface
      */
     protected function extractInlineContraints(string $string, string $arrayName): string
     {
-        preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
+        \preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
 
-        array_shift($parameters);
+        \array_shift($parameters);
         $max = \count($parameters);
         if ($max > 0) {
             for ($i = 0; $i < $max; $i += 2) {
                 $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
             }
 
-            $string = preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
+            $string = \preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
         }
 
         return $string;
@@ -394,7 +394,7 @@ class Router implements RequestHandlerInterface
         }
 
         foreach ($optionalsParameters as $key => $value) {
-            if (!array_key_exists($key, $this->routeParameters)) {
+            if (!\array_key_exists($key, $this->routeParameters)) {
                 $this->routeParameters[$key] = $value;
             }
         }
@@ -464,8 +464,8 @@ class Router implements RequestHandlerInterface
     protected function pushMiddlewaresToApplyInPipe(): void
     {
         $this->currentMiddlewareInPipeIndex = 0;
-        $this->middlewaresInPipe = array_merge($this->middlewaresInPipe, $this->globalMiddlewares);
-        $this->middlewaresInPipe = array_merge($this->middlewaresInPipe, $this->currentRoute->getMiddlewares());
+        $this->middlewaresInPipe = \array_merge($this->middlewaresInPipe, $this->globalMiddlewares);
+        $this->middlewaresInPipe = \array_merge($this->middlewaresInPipe, $this->currentRoute->getMiddlewares());
         $this->middlewaresInPipe[] = $this->currentRoute->getCallback();
     }
 
@@ -478,7 +478,7 @@ class Router implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (!array_key_exists($this->currentMiddlewareInPipeIndex, $this->middlewaresInPipe)) {
+        if (!\array_key_exists($this->currentMiddlewareInPipeIndex, $this->middlewaresInPipe)) {
             return $this->generate404($request);
         }
 
@@ -496,7 +496,7 @@ class Router implements RequestHandlerInterface
 
             return $this->handle($request);
         }
-        throw new RouterException(sprintf('Middleware is invalid: %s', \gettype($middleware)));
+        throw new RouterException(\sprintf('Middleware is invalid: %s', \gettype($middleware)));
     }
 
     /**
@@ -506,7 +506,7 @@ class Router implements RequestHandlerInterface
     {
         $middleware = null;
 
-        if (array_key_exists($this->currentMiddlewareInPipeIndex, $this->middlewaresInPipe)) {
+        if (\array_key_exists($this->currentMiddlewareInPipeIndex, $this->middlewaresInPipe)) {
             $middleware = $this->middlewaresInPipe[$this->currentMiddlewareInPipeIndex];
             ++$this->currentMiddlewareInPipeIndex;
         }
@@ -548,7 +548,7 @@ class Router implements RequestHandlerInterface
      */
     protected function treatRouterConfig(array $config): void
     {
-        if (!array_key_exists('router', $config)) {
+        if (!\array_key_exists('router', $config)) {
             return;
         }
 
@@ -556,7 +556,7 @@ class Router implements RequestHandlerInterface
             throw new RouterException('Config router has to be an array');
         }
 
-        if (array_key_exists('middlewares', $config['router'])) {
+        if (\array_key_exists('middlewares', $config['router'])) {
             if (!\is_array($config['router']['middlewares'])) {
                 throw new RouterException('Config router/middlewares has to be an array');
             }
@@ -564,7 +564,7 @@ class Router implements RequestHandlerInterface
             $this->setGlobalMiddlewares($config['router']['middlewares']);
         }
 
-        if (array_key_exists('constraints', $config['router'])) {
+        if (\array_key_exists('constraints', $config['router'])) {
             if (!\is_array($config['router']['constraints'])) {
                 throw new RouterException('Config router/constraints has to be an array');
             }
@@ -572,7 +572,7 @@ class Router implements RequestHandlerInterface
             $this->setGlobalParametersConstraints($config['router']['constraints']);
         }
 
-        if (array_key_exists('host', $config['router'])) {
+        if (\array_key_exists('host', $config['router'])) {
             if (!\is_string($config['router']['host'])) {
                 throw new RouterException('Config router/host has to be a string');
             }
@@ -580,7 +580,7 @@ class Router implements RequestHandlerInterface
             $this->setGlobalHost($config['router']['host']);
         }
 
-        if (array_key_exists('host_constraints', $config['router'])) {
+        if (\array_key_exists('host_constraints', $config['router'])) {
             if (!\is_array($config['router']['host_constraints'])) {
                 throw new RouterException('Config router/host_constraints has to be an array');
             }
@@ -588,7 +588,7 @@ class Router implements RequestHandlerInterface
             $this->setGlobalHostConstraints($config['router']['host_constraints']);
         }
 
-        if (array_key_exists('default_404', $config['router'])) {
+        if (\array_key_exists('default_404', $config['router'])) {
             $this->setDefault404($config['router']['default_404']);
         }
     }
@@ -600,7 +600,7 @@ class Router implements RequestHandlerInterface
      */
     protected function treatRoutesConfig(array $config): void
     {
-        if (!array_key_exists('routes', $config)) {
+        if (!\array_key_exists('routes', $config)) {
             return;
         }
 
@@ -609,25 +609,25 @@ class Router implements RequestHandlerInterface
         }
 
         foreach ($config['routes'] as $route) {
-            if (!array_key_exists('methods', $route)) {
+            if (!\array_key_exists('methods', $route)) {
                 throw new RouterException('Config routes/methods is mandatory');
             }
 
-            if (!array_key_exists('url', $route)) {
+            if (!\array_key_exists('url', $route)) {
                 throw new RouterException('Config routes/url is mandatory');
             }
 
-            if (!array_key_exists('callback', $route)) {
+            if (!\array_key_exists('callback', $route)) {
                 throw new RouterException('Config routes/callback is mandatory');
             }
 
             $newRoute = new Route($route['methods'], $route['url'], $route['callback']);
 
-            if (array_key_exists('constraints', $route)) {
+            if (\array_key_exists('constraints', $route)) {
                 $newRoute->setParametersConstraints($route['constraints']);
             }
 
-            if (array_key_exists('middlewares', $route)) {
+            if (\array_key_exists('middlewares', $route)) {
                 if (!\is_array($route['middlewares'])) {
                     throw new RouterException('Config routes/middlewares has to be an array');
                 }
@@ -637,7 +637,7 @@ class Router implements RequestHandlerInterface
                 }
             }
 
-            if (array_key_exists('name', $route)) {
+            if (\array_key_exists('name', $route)) {
                 if (!\is_string($route['name'])) {
                     throw new RouterException('Config routes/name has to be a string');
                 }
@@ -645,7 +645,7 @@ class Router implements RequestHandlerInterface
                 $newRoute->setName($route['name']);
             }
 
-            if (array_key_exists('host', $route)) {
+            if (\array_key_exists('host', $route)) {
                 if (!\is_string($route['host'])) {
                     throw new RouterException('Config routes/host has to be a string');
                 }
@@ -653,7 +653,7 @@ class Router implements RequestHandlerInterface
                 $newRoute->setHost($route['host']);
             }
 
-            if (array_key_exists('host_constraints', $route)) {
+            if (\array_key_exists('host_constraints', $route)) {
                 if (!\is_array($route['host_constraints'])) {
                     throw new RouterException('Config routes/host_constraints has to be an array');
                 }
@@ -661,7 +661,7 @@ class Router implements RequestHandlerInterface
                 $newRoute->setHostConstraints($route['host_constraints']);
             }
 
-            if (array_key_exists('optionals_parameters', $route)) {
+            if (\array_key_exists('optionals_parameters', $route)) {
                 if (!\is_array($route['optionals_parameters'])) {
                     throw new RouterException('Config routes/optionals_parameters has to be an array');
                 }
