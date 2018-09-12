@@ -69,6 +69,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function get(string $url, $callback): Route
     {
@@ -83,6 +84,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function post(string $url, $callback): Route
     {
@@ -97,6 +99,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function put(string $url, $callback): Route
     {
@@ -111,6 +114,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function patch(string $url, $callback): Route
     {
@@ -125,6 +129,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function delete(string $url, $callback): Route
     {
@@ -139,6 +144,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function options(string $url, $callback): Route
     {
@@ -153,6 +159,7 @@ class Router implements RequestHandlerInterface
      * @param        $callback
      *
      * @return Route
+     * @throws \Rancoud\Router\RouterException
      */
     public function any(string $url, $callback): Route
     {
@@ -165,6 +172,8 @@ class Router implements RequestHandlerInterface
     /**
      * @param string $prefixPath
      * @param        $callback
+     *
+     * @throws \Rancoud\Router\RouterException
      */
     public function crud(string $prefixPath, $callback): void
     {
@@ -689,10 +698,16 @@ class Router implements RequestHandlerInterface
      */
     public function generateUrl(string $routeName, array $routeParameters = []): ?string
     {
-        $routeSelected = null;
         foreach ($this->routes as $route) {
-            if ($route->getName() === $routeName) {
-                return $route->generateUrl($routeParameters);
+            if ($route->getCallback() instanceof self) {
+                $url = ($route->getCallback())->generateUrl($routeName, $routeParameters);
+                if ($url !== null) {
+                    return $url;
+                }
+            } else {
+                if ($route->getName() === $routeName) {
+                    return $route->generateUrl($routeParameters);
+                }
             }
         }
 

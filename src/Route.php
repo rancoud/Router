@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
-use Closure;
 use Rancoud\Http\Message\Request;
 
 /**
@@ -47,7 +46,7 @@ class Route
      *
      * @param array|string   $methods
      * @param string         $url
-     * @param Closure|string $callback
+     * @param \Closure|string $callback
      *
      * @throws RouterException
      */
@@ -159,7 +158,7 @@ class Route
     }
 
     /**
-     * @return Closure|null|string
+     * @return \Closure|null|string
      */
     public function getCallback()
     {
