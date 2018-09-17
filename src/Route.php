@@ -44,8 +44,8 @@ class Route
     /**
      * Route constructor.
      *
-     * @param array|string   $methods
-     * @param string         $url
+     * @param array|string    $methods
+     * @param string          $url
      * @param \Closure|string $callback
      *
      * @throws RouterException

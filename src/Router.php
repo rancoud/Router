@@ -68,8 +68,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function get(string $url, $callback): Route
     {
@@ -83,8 +84,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function post(string $url, $callback): Route
     {
@@ -98,8 +100,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function put(string $url, $callback): Route
     {
@@ -113,8 +116,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function patch(string $url, $callback): Route
     {
@@ -128,8 +132,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function delete(string $url, $callback): Route
     {
@@ -143,8 +148,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function options(string $url, $callback): Route
     {
@@ -158,8 +164,9 @@ class Router implements RequestHandlerInterface
      * @param string $url
      * @param        $callback
      *
-     * @return Route
      * @throws \Rancoud\Router\RouterException
+     *
+     * @return Route
      */
     public function any(string $url, $callback): Route
     {
