@@ -65,10 +65,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -81,10 +81,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -97,10 +97,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -113,10 +113,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -129,10 +129,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -145,10 +145,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -161,10 +161,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $url
-     * @param        $callback
+     * @param string                                     $url
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      *
      * @return Route
      */
@@ -177,10 +177,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string $prefixPath
-     * @param        $callback
+     * @param string                                     $prefixPath
+     * @param string|\Closure|MiddlewareInterface|Router $callback
      *
-     * @throws \Rancoud\Router\RouterException
+     * @throws RouterException
      */
     public function crud(string $prefixPath, $callback): void
     {
@@ -469,7 +469,10 @@ class Router implements RequestHandlerInterface
             } elseif ($this->default404 instanceof MiddlewareInterface) {
                 return $this->default404->process($request, $this);
             } elseif (\is_string($this->default404)) {
-                return (new $this->default404())->process($request, $this);
+                $default404Instance = (new $this->default404());
+                if (\method_exists($default404Instance, 'process')) {
+                    return $default404Instance->process($request, $this);
+                }
             }
 
             throw new RouterException('The default404 is invalid');
@@ -504,7 +507,10 @@ class Router implements RequestHandlerInterface
         } elseif ($middleware instanceof MiddlewareInterface) {
             return $middleware->process($request, $this);
         } elseif (\is_string($middleware)) {
-            return (new $middleware())->process($request, $this);
+            $middlewareInstance = (new $middleware());
+            if (\method_exists($middlewareInstance, 'process')) {
+                return $middlewareInstance->process($request, $this);
+            }
         } elseif ($middleware instanceof self) {
             if ($middleware->findRouteRequest($request)) {
                 return $middleware->dispatch($request);
@@ -516,7 +522,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @return mixed|null
+     * @return \Closure|MiddlewareInterface|Router|string|null
      */
     protected function getMiddlewareInPipe()
     {
@@ -531,7 +537,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param $middleware
+     * @param \Closure|MiddlewareInterface|Router|string $middleware
      */
     public function addGlobalMiddleware($middleware): void
     {
@@ -738,7 +744,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param $callback
+     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|string $callback
      */
     public function setDefault404($callback): void
     {

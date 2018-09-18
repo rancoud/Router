@@ -133,19 +133,19 @@ $router->any('/api/peoples/{id}', $subRouter2);
 ## Router Methods
 ### General Commands  
 #### Add route
-* addRoute(route: \Rancoud\Router\Route):void  
+* addRoute(route: \Rancoud\Router\Route): void  
 
 #### Add route shortcuts
-* get(url: string, callback: mixed):\Rancoud\Router\Route  
-* post(url: string, callback: mixed):\Rancoud\Router\Route  
-* put(url: string, callback: mixed):\Rancoud\Router\Route  
-* patch(url: string, callback: mixed):\Rancoud\Router\Route  
-* delete(url: string, callback: mixed):\Rancoud\Router\Route  
-* options(url: string, callback: mixed):\Rancoud\Router\Route  
-* any(url: string, callback: mixed):void  
+* get(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): \Rancoud\Router\Route  
+* post(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): \Rancoud\Router\Route  
+* put(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): \Rancoud\Router\Route  
+* patch(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): \Rancoud\Router\Route  
+* delete(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): \Rancoud\Router\Route  
+* options(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): \Rancoud\Router\Route  
+* any(url: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): void  
 
 #### Add route for a CRUD system
-* crud(prefixPath: string, callback: mixed):void  
+* crud(prefixPath: string, callback: string|\Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router): void  
 
 It will create all this routes:  
 GET  $prefixPath  
@@ -153,7 +153,7 @@ GET / POST  $prefixPath . '/new'
 GET / POST / DELETE $prefixPath . '/{id:\d+}'  
 
 #### Setup Router and Routes with an array
-* setupRouterAndRoutesWithConfigArray(config: array):void  
+* setupRouterAndRoutesWithConfigArray(config: array): void  
 
 In this example you can setup router's middlewares and routes with an array  
 ```php
@@ -210,74 +210,80 @@ $config = [
 
 $router = new Router();
 $router->setupRouterAndRoutesWithConfigArray($config);
+
+// you can add a Router as a callback
+$subRoute = new Router();
+$subRoute->setupRouterAndRoutesWithConfigArray($config);
+$router->any('/(.*)', $subRoute);
 ```
 
 #### Get Routes
-* getRoutes():\Rancoud\Router\Route[]  
+* getRoutes(): \Rancoud\Router\Route[]  
 
 #### Find route
-* findRoute(method: string, url: string, [host: string=null]):bool  
-* findRouteRequest(request: \Psr\Http\Message\ServerRequestInterface):bool  
-* getRouteParameters():array  
+* findRoute(method: string, url: string, [host: string = null]): bool  
+* findRouteRequest(request: \Psr\Http\Message\ServerRequestInterface): bool  
+* getRouteParameters(): array  
 
 #### Run the found route 
-* dispatch(request: \Psr\Http\Message\ServerRequestInterface):\Psr\Http\Message\Response  
-* handle(request: \Psr\Http\Message\ServerRequestInterface):\Psr\Http\Message\Response  
+* dispatch(request: \Psr\Http\Message\ServerRequestInterface): \Psr\Http\Message\Response  
+* handle(request: \Psr\Http\Message\ServerRequestInterface): \Psr\Http\Message\Response  
 
 The difference between dispatch and handle is dispatch is used in first place.  
 Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful for middleware.  
 
 #### Middlewares
-* addGlobalMiddleware(middleware: mixed):void  
-* setGlobalMiddlewares(middlewares: array):void  
+* addGlobalMiddleware(middleware: \Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router|string): void  
+* setGlobalMiddlewares(middlewares: array): void  
 
 #### Global constraints
-* setGlobalParametersConstraints(constraints: array):void  
-* setGlobalHostConstraints(constraints: array):void  
+* setGlobalParametersConstraints(constraints: array): void  
+* setGlobalHostConstraints(constraints: array): void  
 
 #### Generate url for a named route
-* generateUrl(route: string, [routeParameters: array = []]):string  
+* generateUrl(routeName: string, [routeParameters: array = []]): ?string  
 
 #### Host constraints
-* setGlobalHost(host: string):void  
+* setGlobalHost(host: string): void  
 
 #### Default 404
-* setDefault404(callback: mixed):\Psr\Http\Message\Response  
+* setDefault404(callback: mixed): void  
 
 ## Route Constructor
 ### Settings
 #### Mandatory
 | Parameter | Type | Description |
 | --- | --- | --- |
-| methods | string OR array | methods matching with the route |
+| methods | string \| array | methods matching with the route |
 | url | string | url to match |
-| callback | string OR closure OR MiddlewareInterface | callback when route is calling by router |
+| callback | string \| Closure \| \Psr\Http\Server\MiddlewareInterface \| \Rancoud\Router\Router | callback when route is calling by router |
 
 ## Route Methods
 ### General Commands  
 #### Getters/Setters
-* getMethods():array  
-* getUrl():string  
-* getName():string  
-* setName(name: string)  
+* getMethods(): array  
+* getUrl(): string  
+* getName(): string  
+* setName(name: string): void  
 #### Constraints
-* setParametersConstraints(constraints: array):void  
-* getParametersConstraints():array  
-* compileRegex():string  
-* setOptionalsParameters(optionalsParameters: array):void  
-* getOptionalsParameters():array  
+* setParametersConstraints(constraints: array): void  
+* getParametersConstraints(): array  
+* compileRegex(globalConstraints: array): string  
+* setOptionalsParameters(optionalsParameters: array): void  
+* getOptionalsParameters(): array  
 #### Callback
-* getCallback():mixed  
+* getCallback(): mixed  
 #### Middlewares
-* addMiddleware(middleware: mixed):array  
-* getMiddlewares():array  
+* addMiddleware(middleware: \Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router|string): array  
+* getMiddlewares(): array  
 #### Generate Url
-* generateUrl([routeParameters: array = []]):string  
+* generateUrl([routeParameters: array = []]): string  
 #### Host
-* setHost(host: string, [hostConstraints: array = []]):void  
-* setHostConstraints(constraints: array):void  
-* isSameHost(host: string, globalConstraints: array = []):bool  
-* getHostParameters():array  
+* getHost(): ?string  
+* setHost(host: string, [hostConstraints: array = []]): void  
+* setHostConstraints(constraints: array): void  
+* isSameHost(host: string, globalConstraints: array = []): bool  
+* getHostParameters(): array  
 
 ## How to Dev
 `./run_all_commands.sh` for php-cs-fixer and phpunit and coverage  

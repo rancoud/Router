@@ -1104,6 +1104,16 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
+    public function testDispatch404ErrorStringNoProcessMethod()
+    {
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('The default404 is invalid');
+
+        $this->router->setDefault404(InvalidClass::class);
+        $request = (new Factory)->createServerRequest('GET', '/');
+        $this->router->dispatch($request);
+    }
+    
     public function testHandleWithClosureNext()
     {
         $this->expectException(RouterException::class);
@@ -1117,6 +1127,19 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
+    public function testHandleWithClosureNextStringNoMethodProcess()
+    {
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Middleware is invalid: string');
+
+        $request = (new Factory())->createServerRequest('GET', '/');
+        $this->router->get('/', InvalidClass::class);
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+
+        $this->router->dispatch($request);
+    }
+    
     public function testDispatch404AfterAllMiddlewarePassed()
     {
         $request = (new Factory)->createServerRequest('GET', '/');
@@ -1375,4 +1398,7 @@ class ExampleMiddleware implements MiddlewareInterface{
     {
         return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
     }
+}
+
+class InvalidClass{
 }

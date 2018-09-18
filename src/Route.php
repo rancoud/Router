@@ -44,9 +44,9 @@ class Route
     /**
      * Route constructor.
      *
-     * @param array|string    $methods
-     * @param string          $url
-     * @param \Closure|string $callback
+     * @param array|string                                                $methods
+     * @param string                                                      $url
+     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -87,7 +87,7 @@ class Route
      */
     protected function setUrl(string $url): void
     {
-        if (\mb_strlen($url) < 1) {
+        if ($url === '') {
             throw new RouterException('Empty url');
         }
 
@@ -158,7 +158,7 @@ class Route
     }
 
     /**
-     * @return \Closure|null|string
+     * @return \Closure|null|string|Router
      */
     public function getCallback()
     {
@@ -166,7 +166,7 @@ class Route
     }
 
     /**
-     * @param $middleware
+     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router|string $middleware
      */
     public function addMiddleware($middleware): void
     {
