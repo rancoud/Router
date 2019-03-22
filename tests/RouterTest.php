@@ -1201,7 +1201,7 @@ class RouterTest extends TestCase
     {
         $subRouter1 = new Router();
         $subRouter1->any('/api/books/{id}', function ($req, $next) {
-            return (new Factory())->createResponse(209, '')->withBody(Stream::create('testRouterception books'));
+            return (new Factory())->createResponse(300, '')->withBody(Stream::create('testRouterception books'));
         });
 
         $subRouter2 = new Router();
@@ -1217,7 +1217,7 @@ class RouterTest extends TestCase
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(209, $response->getStatusCode());
+        static::assertEquals(300, $response->getStatusCode());
         static::assertEquals('testRouterception books', $response->getBody());
 
         $request = (new Factory)->createServerRequest('GET', '/api/peoples/14');
@@ -1232,7 +1232,7 @@ class RouterTest extends TestCase
     {
         $subRouter1 = new Router();
         $subRouter1->any('/api/books/{id}', function ($req, $next) {
-            return (new Factory())->createResponse(209, '')->withBody(Stream::create('testRouterception books'));
+            return (new Factory())->createResponse(300, '')->withBody(Stream::create('testRouterception books'));
         });
 
         $subRouter2 = new Router();
@@ -1252,7 +1252,7 @@ class RouterTest extends TestCase
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(209, $response->getStatusCode());
+        static::assertEquals(300, $response->getStatusCode());
         static::assertEquals('testRouterception books', $response->getBody());
 
         $request = (new Factory)->createServerRequest('GET', '/api/peoples/14');

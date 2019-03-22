@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
+use Psr\Http\Server\{MiddlewareInterface, RequestHandlerInterface};
 
 /**
  * Class Router.
@@ -707,7 +705,7 @@ class Router implements RequestHandlerInterface
      * @param string $routeName
      * @param array  $routeParameters
      *
-     * @return null|string
+     * @return string|null
      */
     public function generateUrl(string $routeName, array $routeParameters = []): ?string
     {

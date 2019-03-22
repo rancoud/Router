@@ -158,7 +158,7 @@ class Route
     }
 
     /**
-     * @return \Closure|null|string|Router
+     * @return \Closure|string|Router|null
      */
     public function getCallback()
     {
@@ -248,7 +248,7 @@ class Route
     }
 
     /**
-     * @return null|string
+     * @return string|null
      */
     public function getHost(): ?string
     {
