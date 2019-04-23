@@ -17,7 +17,7 @@ class Route
     /** @var string */
     protected $url = '';
 
-    /** @var string|null */
+    /** @var \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string|null */
     protected $callback = null;
 
     /** @var array */
@@ -317,7 +317,7 @@ class Route
     /**
      * @param $optionalsParameters
      */
-    public function setOptionalsParameters($optionalsParameters): void
+    public function setOptionalsParameters(array $optionalsParameters): void
     {
         $this->optionalsParameters = $optionalsParameters;
     }

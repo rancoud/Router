@@ -832,7 +832,7 @@ class RouterTest extends TestCase
         $route = new Route('GET', '/abc', null);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -855,7 +855,7 @@ class RouterTest extends TestCase
         $route->setHost($host);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -878,7 +878,7 @@ class RouterTest extends TestCase
         $route->setHost($host);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -905,7 +905,7 @@ class RouterTest extends TestCase
         $route->setHost($host);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -928,7 +928,7 @@ class RouterTest extends TestCase
         $route->setHost($host, ['subdomain' => '\d{4}']);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -948,7 +948,7 @@ class RouterTest extends TestCase
         $route->setHostConstraints(['subdomain' => '\d{4}']);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -969,7 +969,7 @@ class RouterTest extends TestCase
         $route->setHost($host);
         $this->router->addRoute($route);
 
-        $request = (new Factory)->createServerRequest('GET', '/abc');
+        $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
         $serverHost = ['HTTP_HOST' => 'api.toto.com'];
@@ -1078,13 +1078,13 @@ class RouterTest extends TestCase
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('No route found to dispatch');
         
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->dispatch($request);
     }
 
     public function testDispatch404()
     {
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404(function ($req, $next) {
             return (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
         });
@@ -1100,7 +1100,7 @@ class RouterTest extends TestCase
         $this->expectExceptionMessage('The default404 is invalid');
 
         $this->router->setDefault404(4545);
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->dispatch($request);
     }
 
@@ -1110,14 +1110,14 @@ class RouterTest extends TestCase
         $this->expectExceptionMessage('The default404 is invalid');
 
         $this->router->setDefault404(InvalidClass::class);
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->dispatch($request);
     }
     
     public function testHandleWithClosureNext()
     {
         $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('Middleware is invalid: NULL');
+        $this->expectExceptionMessage('No route found to dispatch');
 
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->get('/', null);
@@ -1142,7 +1142,7 @@ class RouterTest extends TestCase
     
     public function testDispatch404AfterAllMiddlewarePassed()
     {
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404(function ($req, $next) {
             return (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
         });
@@ -1162,7 +1162,7 @@ class RouterTest extends TestCase
         $response = (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
         $middleware->method('process')->willReturn($response);
         
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404($middleware);
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
@@ -1172,7 +1172,7 @@ class RouterTest extends TestCase
 
     public function testDispatch404StringMiddleware()
     {
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404(ExampleMiddleware::class);
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
@@ -1190,7 +1190,7 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         
-        $request = (new Factory)->createServerRequest('GET', '/');
+        $request = (new Factory())->createServerRequest('GET', '/');
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
         static::assertEquals(200, $response->getStatusCode());
@@ -1212,7 +1212,7 @@ class RouterTest extends TestCase
         $this->router->any('/api/books/{id}', $subRouter1);
         $this->router->any('/api/peoples/{id}', $subRouter2);
 
-        $request = (new Factory)->createServerRequest('GET', '/api/books/14');
+        $request = (new Factory())->createServerRequest('GET', '/api/books/14');
 
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
@@ -1220,7 +1220,7 @@ class RouterTest extends TestCase
         static::assertEquals(300, $response->getStatusCode());
         static::assertEquals('testRouterception books', $response->getBody());
 
-        $request = (new Factory)->createServerRequest('GET', '/api/peoples/14');
+        $request = (new Factory())->createServerRequest('GET', '/api/peoples/14');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
@@ -1247,7 +1247,7 @@ class RouterTest extends TestCase
             return (new Factory())->createResponse(404, '')->withBody(Stream::create('no match'));
         });
 
-        $request = (new Factory)->createServerRequest('GET', '/api/books/14');
+        $request = (new Factory())->createServerRequest('GET', '/api/books/14');
 
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
@@ -1255,14 +1255,14 @@ class RouterTest extends TestCase
         static::assertEquals(300, $response->getStatusCode());
         static::assertEquals('testRouterception books', $response->getBody());
 
-        $request = (new Factory)->createServerRequest('GET', '/api/peoples/14');
+        $request = (new Factory())->createServerRequest('GET', '/api/peoples/14');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
         static::assertEquals(204, $response->getStatusCode());
         static::assertEquals('testRouterception peoples', $response->getBody());
 
-        $request = (new Factory)->createServerRequest('GET', '/api/bottles/14');
+        $request = (new Factory())->createServerRequest('GET', '/api/bottles/14');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);

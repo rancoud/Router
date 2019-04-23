@@ -208,14 +208,13 @@ class Router implements RequestHandlerInterface
         /* @var $request \Rancoud\Http\Message\ServerRequest */
         $this->method = $request->getMethod();
         $this->url = $request->getUri()->getPath();
+        $this->host = null;
 
         $serverParams = $request->getServerParams();
-        if (\array_key_exists('HTTP_HOST', $serverParams)) {
+        if (isset($serverParams['HTTP_HOST'])) {
             $this->host = $serverParams['HTTP_HOST'];
-        } elseif (\array_key_exists('SERVER_NAME', $serverParams)) {
+        } elseif (isset($serverParams['SERVER_NAME'])) {
             $this->host = $serverParams['SERVER_NAME'];
-        } else {
-            $this->host = null;
         }
 
         return $this->find();
@@ -408,7 +407,7 @@ class Router implements RequestHandlerInterface
         }
 
         foreach ($optionalsParameters as $key => $value) {
-            if (!\array_key_exists($key, $this->routeParameters)) {
+            if (!isset($this->routeParameters[$key])) {
                 $this->routeParameters[$key] = $value;
             }
         }
@@ -495,7 +494,7 @@ class Router implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (!\array_key_exists($this->currentMiddlewareInPipeIndex, $this->middlewaresInPipe)) {
+        if (!isset($this->middlewaresInPipe[$this->currentMiddlewareInPipeIndex])) {
             return $this->generate404($request);
         }
 
