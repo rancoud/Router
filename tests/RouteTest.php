@@ -13,52 +13,58 @@ use Rancoud\Router\RouterException;
  */
 class RouteTest extends TestCase
 {
-    public function testConstructArrayMethods()
+    /**
+     * @throws RouterException
+     */
+    public function testConstructArrayMethods(): void
     {
         $route = new Route(['GET', 'POST'], '/', function () {
         });
-        static::assertSame('Rancoud\Router\Route', get_class($route));
+        static::assertInstanceOf(Route::class, $route);
     }
 
-    public function testConstructStringMethods()
+    /**
+     * @throws RouterException
+     */
+    public function testConstructStringMethods(): void
     {
         $route = new Route('POST', '/', function () {
         });
-        static::assertSame('Rancoud\Router\Route', get_class($route));
+        static::assertInstanceOf(Route::class, $route);
     }
 
-    public function testConstructRouterException()
+    public function testConstructRouterException(): void
     {
         try {
-            new Route('', '/', function () {
+            new Route('', '/', static function () {
             });
         } catch (RouterException $e) {
             static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
-            new Route(false, '/', function () {
+            new Route(false, '/', static function () {
             });
         } catch (RouterException $e) {
             static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
-            new Route('method', '/', function () {
+            new Route('method', '/', static function () {
             });
         } catch (RouterException $e) {
             static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
-            new Route('get', '/', function () {
+            new Route('get', '/', static function () {
             });
         } catch (RouterException $e) {
             static::assertSame(RouterException::class, get_class($e));
         }
 
         try {
-            new Route('GET', '', function () {
+            new Route('GET', '', static function () {
             });
         } catch (RouterException $e) {
             static::assertSame(RouterException::class, get_class($e));

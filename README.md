@@ -1,6 +1,12 @@
 # Router Package
 
-[![Build Status](https://travis-ci.org/rancoud/Router.svg?branch=master)](https://travis-ci.org/rancoud/Router) [![Coverage Status](https://coveralls.io/repos/github/rancoud/Router/badge.svg?branch=master)](https://coveralls.io/github/rancoud/Router?branch=master)
+![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/rancoud/router)
+[![Packagist Version](https://img.shields.io/packagist/v/rancoud/router)](https://packagist.org/packages/rancoud/router)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/rancoud/router)](https://packagist.org/packages/rancoud/router)
+[![Composer dependencies](https://img.shields.io/badge/dependencies-1-brightgreen)](https://github.com/rancoud/router/blob/master/composer.json)
+[![Test workflow](https://img.shields.io/github/workflow/status/rancoud/router/test?label=test&logo=github)](https://github.com/rancoud/router/actions?workflow=test)
+[![Codecov](https://img.shields.io/codecov/c/github/rancoud/router?logo=codecov)](https://codecov.io/gh/rancoud/router)
+[![composer.lock](https://poser.pugx.org/rancoud/router/composerlock)](https://packagist.org/packages/rancoud/router)
 
 Router PSR7 and PSR15.  
 
@@ -265,19 +271,24 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 * getUrl(): string  
 * getName(): string  
 * setName(name: string): void  
+
 #### Constraints
 * setParametersConstraints(constraints: array): void  
 * getParametersConstraints(): array  
 * compileRegex(globalConstraints: array): string  
 * setOptionalsParameters(optionalsParameters: array): void  
 * getOptionalsParameters(): array  
+
 #### Callback
 * getCallback(): mixed  
+
 #### Middlewares
 * addMiddleware(middleware: \Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router|string): array  
 * getMiddlewares(): array  
+
 #### Generate Url
 * generateUrl([routeParameters: array = []]): string  
+
 #### Host
 * getHost(): ?string  
 * setHost(host: string, [hostConstraints: array = []]): void  
@@ -286,5 +297,6 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 * getHostParameters(): array  
 
 ## How to Dev
-`./run_all_commands.sh` for php-cs-fixer and phpunit and coverage  
-`./run_php_unit_coverage.sh` for phpunit and coverage  
+`composer ci` for php-cs-fixer and phpunit and coverage  
+`composer lint` for php-cs-fixer  
+`composer test` for phpunit and coverage  

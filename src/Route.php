@@ -12,34 +12,34 @@ use Rancoud\Http\Message\Request;
 class Route
 {
     /** @var array */
-    protected $methods = [];
+    protected array $methods = [];
 
     /** @var string */
-    protected $url = '';
+    protected string $url = '';
 
     /** @var \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string|null */
-    protected $callback = null;
+    protected $callback;
 
     /** @var array */
-    protected $constraints = [];
+    protected array $constraints = [];
 
     /** @var array */
-    protected $middlewares = [];
+    protected array $middlewares = [];
 
-    /** @var string */
-    protected $name;
+    /** @var string|null */
+    protected ?string $name = null;
 
-    /** @var string */
-    protected $host;
-
-    /** @var array */
-    protected $hostConstraints = [];
+    /** @var string|null */
+    protected ?string $host = null;
 
     /** @var array */
-    protected $hostParameters = [];
+    protected array $hostConstraints = [];
 
     /** @var array */
-    protected $optionalsParameters = [];
+    protected array $hostParameters = [];
+
+    /** @var array */
+    protected array $optionalsParameters = [];
 
     /**
      * Route constructor.
@@ -111,7 +111,7 @@ class Route
     {
         $url = $this->extractInlineContraints($this->url, 'constraints');
 
-        $regex = \preg_replace('/\{(\w+?)\}/', '(?P<$1>[^/]++)', $url);
+        $regex = \preg_replace('/{(\w+?)}/', '(?P<$1>[^/]++)', $url);
 
         $constraints = \array_merge($globalConstraints, $this->constraints);
 
@@ -134,7 +134,7 @@ class Route
      */
     protected function extractInlineContraints(string $string, string $arrayName): string
     {
-        \preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
+        \preg_match('/{(\w+?):(.+?)}/', $string, $parameters);
 
         \array_shift($parameters);
         $max = \count($parameters);
@@ -143,7 +143,7 @@ class Route
                 $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
             }
 
-            $string = \preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
+            $string = \preg_replace('/{(\w+?):(.+?)}/', '{$1}', $string);
         }
 
         return $string;
@@ -166,7 +166,7 @@ class Route
     }
 
     /**
-     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|\Rancoud\Router\Router|string $middleware
+     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $middleware
      */
     public function addMiddleware($middleware): void
     {
@@ -221,7 +221,7 @@ class Route
     public function generateUrl(array $routeParameters = []): string
     {
         $url = $this->getUrl();
-        $url = \preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $url);
+        $url = \preg_replace('/{(\w+?):(.+?)}/', '{$1}', $url);
         foreach ($routeParameters as $parameter => $value) {
             $url = \str_replace('{' . $parameter . '}', $value, $url);
         }
@@ -273,7 +273,7 @@ class Route
 
         $regex = $this->extractInlineContraints($this->host, 'hostConstraints');
 
-        $regex = \preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
+        $regex = \preg_replace('/{(\w+?)}/', '(?P<$1>[^.]++)', $regex);
 
         $constraints = \array_merge($globalConstraints, $this->hostConstraints);
         foreach ($constraints as $id => $regexRule) {
