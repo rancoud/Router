@@ -26,26 +26,26 @@ class RouterTest extends TestCase
     /** @var Router */
     protected $router;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->router = new Router();
     }
 
-    public function testAddRoute()
+    public function testAddRoute(): void
     {
         $this->router->addRoute(new Route('GET', '/', function () {
         }));
         static::assertSame(1, count($this->router->getRoutes()));
     }
 
-    public function testShortcutGet()
+    public function testShortcutGet(): void
     {
         $this->router->get('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
 
-    public function testShortcutGetFluent()
+    public function testShortcutGetFluent(): void
     {
         $this->router->get('/', function () {
         })->setName('route a');
@@ -55,49 +55,49 @@ class RouterTest extends TestCase
         static::assertSame('route a', $routes[0]->getName());
     }
 
-    public function testShortcutPost()
+    public function testShortcutPost(): void
     {
         $this->router->post('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
     
-    public function testShortcutPut()
+    public function testShortcutPut(): void
     {
         $this->router->put('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
     
-    public function testShortcutPatch()
+    public function testShortcutPatch(): void
     {
         $this->router->patch('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
     
-    public function testShortcutDelete()
+    public function testShortcutDelete(): void
     {
         $this->router->delete('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
     
-    public function testShortcutOptions()
+    public function testShortcutOptions(): void
     {
         $this->router->options('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
     
-    public function testShortcutAny()
+    public function testShortcutAny(): void
     {
         $this->router->any('/', function () {
         });
         static::assertSame(1, count($this->router->getRoutes()));
     }
     
-    public function testFindRoute()
+    public function testFindRoute(): void
     {
         $this->router->get('/', function () {
         });
@@ -105,7 +105,7 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
     
-    public function testFindRouteWithQSA()
+    public function testFindRouteWithQSA(): void
     {
         $this->router->get('/', function () {
         });
@@ -115,7 +115,7 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
 
-    public function testFindRouteUri()
+    public function testFindRouteUri(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/azerty?az=9');
 
@@ -125,7 +125,7 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
     
-    public function testNotFindRoute()
+    public function testNotFindRoute(): void
     {
         $this->router->get('/', function () {
         });
@@ -133,7 +133,7 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
-    public function testFindAllCrudRoute()
+    public function testFindAllCrudRoute(): void
     {
         $this->router->crud('/posts', function () {
         });
@@ -151,7 +151,7 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
     
-    public function testFindRouteWithParameters()
+    public function testFindRouteWithParameters(): void
     {
         $this->router->get('/{id}', function () {
         });
@@ -162,7 +162,7 @@ class RouterTest extends TestCase
         static::assertSame('aze', $parameters['id']);
     }
     
-    public function testFindRouteWithParametersAndSimpleRegexOnIt()
+    public function testFindRouteWithParametersAndSimpleRegexOnIt(): void
     {
         $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
         $route->setParametersConstraints(['locale' => 'fr|en', 'year' => '\d{4}']);
@@ -186,7 +186,7 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
-    public function testFindRouteWithParametersAndSimpleRegexOnItNotFound()
+    public function testFindRouteWithParametersAndSimpleRegexOnItNotFound(): void
     {
         $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
         $route->setParametersConstraints(['locale' => 'fr|en', 'year' => '\d{4}']);
@@ -199,7 +199,7 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
     
-    public function testFindRouteWithParametersAndComplexRegexOnIt()
+    public function testFindRouteWithParametersAndComplexRegexOnIt(): void
     {
         $ipRegex = '\b(?:(?:25[0-5]|2[0-4][0-9]|1?[1-9][0-9]?|10[0-9])(?:(?<!\.)\b|\.))';
         $ipRegex .= '(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:(?<!\.)\b|\.)){3}';
@@ -228,7 +228,7 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
-    public function testFindRouteWithParametersAndSimpleInlineRegex()
+    public function testFindRouteWithParametersAndSimpleInlineRegex(): void
     {
         $route = new Route('GET', '/articles/{locale:fr|jp}/{slug}', null);
         $this->router->addRoute($route);
@@ -240,7 +240,7 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
 
-    public function testHandleWithClosureMatch()
+    public function testHandleWithClosureMatch(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
         $request = $request->withAttribute('attr', 'src');
@@ -262,7 +262,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testHandleWithMiddleware()
+    public function testHandleWithMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
         $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
@@ -279,7 +279,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testHandleWithString()
+    public function testHandleWithString(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
         $this->router->get('/handleme/{attr}/{id}', function ($request, $next) {
@@ -297,7 +297,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testHandleWithClosureAndAttributeInRequestExtractedFromRoute()
+    public function testHandleWithClosureAndAttributeInRequestExtractedFromRoute(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
         $this->router->get('/handleme', ExampleMiddleware::class);
@@ -310,7 +310,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testAddGlobalMiddleware()
+    public function testAddGlobalMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
         $this->router->addGlobalMiddleware(function ($request, $next) {
@@ -340,7 +340,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testAddGlobalMiddlewareAndRouteAddMiddleware()
+    public function testAddGlobalMiddlewareAndRouteAddMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
         
@@ -397,7 +397,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testSetupRouterAndRoutesWithConfigArray()
+    public function testSetupRouterAndRoutesWithConfigArray(): void
     {
         $config = [
             'router' => [
@@ -455,7 +455,7 @@ class RouterTest extends TestCase
         static::assertEquals([], $routes[1]->getParametersConstraints());
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoRouterPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoRouterPart(): void
     {
         $config = [
             'routes' => [
@@ -486,7 +486,7 @@ class RouterTest extends TestCase
         static::assertEquals([], $property->getValue($this->router));
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareInRouterPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareInRouterPart(): void
     {
         $config = [
             'router' => null
@@ -498,7 +498,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareValidInRouterPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareValidInRouterPart(): void
     {
         $config = [
             'router' => ['middlewares' => null]
@@ -510,7 +510,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoConstraintValidInRouterPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoConstraintValidInRouterPart(): void
     {
         $config = [
             'router' => ['constraints' => null]
@@ -522,7 +522,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoHostConstraintValidInRouterPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoHostConstraintValidInRouterPart(): void
     {
         $config = [
             'router' => ['host_constraints' => null]
@@ -534,7 +534,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoHostValidInRouterPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoHostValidInRouterPart(): void
     {
         $config = [
             'router' => ['host' => null]
@@ -546,7 +546,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayNoValidRoutes()
+    public function testSetupRouterAndRoutesWithConfigArrayNoValidRoutes(): void
     {
         $config = [
             'routes' => null
@@ -558,7 +558,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoMethodsInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoMethodsInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -572,7 +572,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoUrlInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoUrlInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -588,7 +588,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoCallbackInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoCallbackInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -605,7 +605,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidMiddlewaresInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidMiddlewaresInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -624,7 +624,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidHostInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidHostInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -643,7 +643,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidHostConstraintsInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidHostConstraintsInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -662,7 +662,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidNameInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidNameInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -681,7 +681,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
     
-    public function testSetupRouterAndRoutesWithConfigArrayNoRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayNoRoutesPart(): void
     {
         $config = [];
 
@@ -690,7 +690,7 @@ class RouterTest extends TestCase
         static::assertTrue(count($routes) === 0);
     }
 
-    public function testSetGlobalConstraints()
+    public function testSetGlobalConstraints(): void
     {
         $request1Found = (new Factory())->createServerRequest('GET', '/article/fr');
         $request2Found = (new Factory())->createServerRequest('GET', '/article_bis/jp');
@@ -709,7 +709,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request2NotFound));
     }
 
-    public function testGenerateUrl()
+    public function testGenerateUrl(): void
     {
         $config = [
             'router' => [
@@ -766,7 +766,7 @@ class RouterTest extends TestCase
         static::assertNull($urls[5]);
     }
 
-    public function testGenerateUrlWithRouter()
+    public function testGenerateUrlWithRouter(): void
     {
         $config = [
             'router' => [
@@ -825,7 +825,7 @@ class RouterTest extends TestCase
         static::assertNull($urls[5]);
     }
     
-    public function testSetGlobalHostRouter()
+    public function testSetGlobalHostRouter(): void
     {
         $host = 'api.toto.com';
         $this->router->setGlobalHost($host);
@@ -848,7 +848,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request));
     }
     
-    public function testSetHost()
+    public function testSetHost(): void
     {
         $host = 'api.toto.com';
         $route = new Route('GET', '/abc', null);
@@ -871,7 +871,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
-    public function testSetHostPlaceholder()
+    public function testSetHostPlaceholder(): void
     {
         $host = '{subdomain}.toto.com';
         $route = new Route('GET', '/abc', null);
@@ -898,7 +898,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
-    public function testSetHostPlaceholderInlineConstraints()
+    public function testSetHostPlaceholderInlineConstraints(): void
     {
         $host = '{subdomain:api|backoffice}.toto.com';
         $route = new Route('GET', '/abc', null);
@@ -921,7 +921,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
-    public function testSetHostAndConstraints()
+    public function testSetHostAndConstraints(): void
     {
         $host = '{subdomain}.toto.com';
         $route = new Route('GET', '/abc', null);
@@ -940,7 +940,7 @@ class RouterTest extends TestCase
         static::assertTrue($this->router->findRouteRequest($request));
     }
 
-    public function testSetHostAndConstraints2()
+    public function testSetHostAndConstraints2(): void
     {
         $host = '{subdomain}.toto.com';
         $route = new Route('GET', '/abc', null);
@@ -960,7 +960,7 @@ class RouterTest extends TestCase
         static::assertTrue($this->router->findRouteRequest($request));
     }
 
-    public function testSetGlobalHostAndConstraints()
+    public function testSetGlobalHostAndConstraints(): void
     {
         $this->router->setGlobalHostConstraints(['subdomain' => '\d{4}']);
 
@@ -981,7 +981,7 @@ class RouterTest extends TestCase
         static::assertTrue($this->router->findRouteRequest($request));
     }
 
-    public function testSetGlobalHostAndConstraintsAndGetInfoInRequest()
+    public function testSetGlobalHostAndConstraintsAndGetInfoInRequest(): void
     {
         $this->router->setGlobalHostConstraints(['subdomain' => '\d{4}']);
 
@@ -1001,7 +1001,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    public function testConfigWithHostAndConstraints()
+    public function testConfigWithHostAndConstraints(): void
     {
         $config = [
             'router' => [
@@ -1073,7 +1073,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
-    public function testDispatchNoRouteFound()
+    public function testDispatchNoRouteFound(): void
     {
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('No route found to dispatch');
@@ -1082,7 +1082,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    public function testDispatch404()
+    public function testDispatch404(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404(function ($req, $next) {
@@ -1094,7 +1094,7 @@ class RouterTest extends TestCase
         static::assertEquals('404', $response->getBody());
     }
     
-    public function testDispatch404Error()
+    public function testDispatch404Error(): void
     {
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('The default404 is invalid');
@@ -1104,7 +1104,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    public function testDispatch404ErrorStringNoProcessMethod()
+    public function testDispatch404ErrorStringNoProcessMethod(): void
     {
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('The default404 is invalid');
@@ -1114,7 +1114,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
     
-    public function testHandleWithClosureNext()
+    public function testHandleWithClosureNext(): void
     {
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('No route found to dispatch');
@@ -1127,7 +1127,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    public function testHandleWithClosureNextStringNoMethodProcess()
+    public function testHandleWithClosureNextStringNoMethodProcess(): void
     {
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Middleware is invalid: string');
@@ -1140,7 +1140,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
     
-    public function testDispatch404AfterAllMiddlewarePassed()
+    public function testDispatch404AfterAllMiddlewarePassed(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404(function ($req, $next) {
@@ -1156,7 +1156,7 @@ class RouterTest extends TestCase
         static::assertEquals('404', $response->getBody());
     }
 
-    public function testDispatch404Middleware()
+    public function testDispatch404Middleware(): void
     {
         $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
         $response = (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
@@ -1170,7 +1170,7 @@ class RouterTest extends TestCase
         static::assertEquals('404', $response->getBody());
     }
 
-    public function testDispatch404StringMiddleware()
+    public function testDispatch404StringMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404(ExampleMiddleware::class);
@@ -1180,7 +1180,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testDispatch404StringMiddlewareWithConfig()
+    public function testDispatch404StringMiddlewareWithConfig(): void
     {
         $config = [
             'router' => [
@@ -1197,7 +1197,7 @@ class RouterTest extends TestCase
         static::assertEquals('ok', $response->getBody());
     }
 
-    public function testRouterceptionRouterInRouteInRouter()
+    public function testRouterceptionRouterInRouteInRouter(): void
     {
         $subRouter1 = new Router();
         $subRouter1->any('/api/books/{id}', function ($req, $next) {
@@ -1228,7 +1228,7 @@ class RouterTest extends TestCase
         static::assertEquals('testRouterception peoples', $response->getBody());
     }
 
-    public function testRouterception2RouterInMiddleware()
+    public function testRouterception2RouterInMiddleware(): void
     {
         $subRouter1 = new Router();
         $subRouter1->any('/api/books/{id}', function ($req, $next) {
@@ -1270,7 +1270,7 @@ class RouterTest extends TestCase
         static::assertEquals('no match', $response->getBody());
     }
 
-    public function testFindRouteWithOneOptionalsParameters()
+    public function testFindRouteWithOneOptionalsParameters(): void
     {
         $this->router->get('/{params}', function () {
         })->setOptionalsParameters(['params' => 1]);
@@ -1281,7 +1281,7 @@ class RouterTest extends TestCase
         static::assertSame('aze', $parameters['params']);
     }
 
-    public function testFindRouteWithoutOneOptionalsParameters()
+    public function testFindRouteWithoutOneOptionalsParameters(): void
     {
         $this->router->get('/{params}', function () {
         })->setOptionalsParameters(['params' => 1]);
@@ -1292,7 +1292,7 @@ class RouterTest extends TestCase
         static::assertSame(1, $parameters['params']);
     }
 
-    public function testFindRouteWithMultiOptionalsParameters()
+    public function testFindRouteWithMultiOptionalsParameters(): void
     {
         $this->router->get('/{items}/{category}/{offset}/{count}', function () {
         })->setOptionalsParameters(
@@ -1344,7 +1344,7 @@ class RouterTest extends TestCase
         static::assertSame(4, $parameters['count']);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidOptionalParametersInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithNoValidOptionalParametersInRoutesPart(): void
     {
         $config = [
             'routes' => [
@@ -1363,7 +1363,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    public function testSetupRouterAndRoutesWithConfigArrayWithOptionalParametersInRoutesPart()
+    public function testSetupRouterAndRoutesWithConfigArrayWithOptionalParametersInRoutesPart(): void
     {
         $config = [
             'routes' => [

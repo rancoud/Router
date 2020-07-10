@@ -13,43 +13,43 @@ use Psr\Http\Server\{MiddlewareInterface, RequestHandlerInterface};
 class Router implements RequestHandlerInterface
 {
     /** @var Route[] */
-    protected $routes = [];
+    protected array $routes = [];
 
-    /** @var null */
-    protected $url = null;
+    /** @var string|null */
+    protected ?string $url = null;
 
-    /** @var null */
-    protected $method = null;
+    /** @var string|null */
+    protected ?string $method = null;
 
     /** @var Route */
-    protected $currentRoute = null;
+    protected ?Route $currentRoute = null;
 
     /** @var array */
-    protected $routeParameters = [];
+    protected array $routeParameters = [];
 
     /** @var array */
-    protected $middlewaresInPipe = [];
+    protected array $middlewaresInPipe = [];
 
     /** @var int */
-    protected $currentMiddlewareInPipeIndex = 0;
+    protected int $currentMiddlewareInPipeIndex = 0;
 
     /** @var array */
-    protected $globalMiddlewares = [];
+    protected array $globalMiddlewares = [];
 
     /** @var array */
-    protected $globalConstraints = [];
+    protected array $globalConstraints = [];
 
-    /** @var string */
-    protected $host;
+    /** @var string|null */
+    protected ?string $host = null;
 
-    /** @var string */
-    protected $hostRouter;
-
-    /** @var array */
-    protected $hostConstraints = [];
+    /** @var string|null */
+    protected ?string $hostRouter = null;
 
     /** @var array */
-    protected $hostParameters = [];
+    protected array $hostConstraints = [];
+
+    /** @var array */
+    protected array $hostParameters = [];
 
     /** @var mixed */
     protected $default404;
@@ -308,7 +308,7 @@ class Router implements RequestHandlerInterface
 
         $regex = $this->extractInlineContraints($this->hostRouter, 'hostConstraints');
 
-        $regex = \preg_replace('/\{(\w+?)\}/', '(?P<$1>[^.]++)', $regex);
+        $regex = \preg_replace('/{(\w+?)}/', '(?P<$1>[^.]++)', $regex);
 
         $constraints = \array_merge($this->globalConstraints, $this->hostConstraints);
         foreach ($constraints as $id => $regexRule) {
@@ -349,7 +349,7 @@ class Router implements RequestHandlerInterface
      */
     protected function extractInlineContraints(string $string, string $arrayName): string
     {
-        \preg_match('/\{(\w+?):(.+?)\}/', $string, $parameters);
+        \preg_match('/{(\w+?):(.+?)}/', $string, $parameters);
 
         \array_shift($parameters);
         $max = \count($parameters);
@@ -358,7 +358,7 @@ class Router implements RequestHandlerInterface
                 $this->{$arrayName}[$parameters[$i]] = $parameters[$i + 1];
             }
 
-            $string = \preg_replace('/\{(\w+?):(.+?)\}/', '{$1}', $string);
+            $string = \preg_replace('/{(\w+?):(.+?)}/', '{$1}', $string);
         }
 
         return $string;
@@ -462,10 +462,14 @@ class Router implements RequestHandlerInterface
     {
         if ($this->default404 !== null) {
             if (\is_callable($this->default404)) {
-                return \call_user_func_array($this->default404, [$request, [$this, 'handle']]);
-            } elseif ($this->default404 instanceof MiddlewareInterface) {
+                return \call_user_func($this->default404, $request, [$this, 'handle']);
+            }
+
+            if ($this->default404 instanceof MiddlewareInterface) {
                 return $this->default404->process($request, $this);
-            } elseif (\is_string($this->default404)) {
+            }
+
+            if (\is_string($this->default404)) {
                 $default404Instance = (new $this->default404());
                 if (\method_exists($default404Instance, 'process')) {
                     return $default404Instance->process($request, $this);
@@ -500,10 +504,14 @@ class Router implements RequestHandlerInterface
 
         $middleware = $this->getMiddlewareInPipe();
         if (\is_callable($middleware)) {
-            return \call_user_func_array($middleware, [$request, [$this, 'handle']]);
-        } elseif ($middleware instanceof MiddlewareInterface) {
+            return $middleware($request, [$this, 'handle']);
+        }
+
+        if ($middleware instanceof MiddlewareInterface) {
             return $middleware->process($request, $this);
-        } elseif (\is_string($middleware)) {
+        }
+
+        if (\is_string($middleware)) {
             $middlewareInstance = (new $middleware());
             if (\method_exists($middlewareInstance, 'process')) {
                 return $middlewareInstance->process($request, $this);
@@ -714,10 +722,8 @@ class Router implements RequestHandlerInterface
                 if ($url !== null) {
                     return $url;
                 }
-            } else {
-                if ($route->getName() === $routeName) {
-                    return $route->generateUrl($routeParameters);
-                }
+            } elseif ($route->getName() === $routeName) {
+                return $route->generateUrl($routeParameters);
             }
         }
 
@@ -741,7 +747,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|string $callback
+     * @param \Closure|MiddlewareInterface|string $callback
      */
     public function setDefault404($callback): void
     {

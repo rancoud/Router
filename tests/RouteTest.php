@@ -13,21 +13,21 @@ use Rancoud\Router\RouterException;
  */
 class RouteTest extends TestCase
 {
-    public function testConstructArrayMethods()
+    public function testConstructArrayMethods(): void
     {
         $route = new Route(['GET', 'POST'], '/', function () {
         });
         static::assertSame('Rancoud\Router\Route', get_class($route));
     }
 
-    public function testConstructStringMethods()
+    public function testConstructStringMethods(): void
     {
         $route = new Route('POST', '/', function () {
         });
         static::assertSame('Rancoud\Router\Route', get_class($route));
     }
 
-    public function testConstructRouterException()
+    public function testConstructRouterException(): void
     {
         try {
             new Route('', '/', function () {
