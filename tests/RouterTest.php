@@ -1336,7 +1336,7 @@ class RouterTest extends TestCase
     public function testRouterceptionRouterInRouteInRouter(): void
     {
         $subRouter1 = new Router();
-        $subRouter1->any('/api/books/{id}', static function ($req, $next) {
+        $subRouter1->any('/api/books/{id:\d+}', static function ($req, $next) {
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
@@ -1346,7 +1346,15 @@ class RouterTest extends TestCase
         });
 
         $subRouter2 = new Router();
-        $subRouter2->any('/api/peoples/{id}', static function ($req, $next) {
+        $subRouter2->setDefault404(static function ($req, $next) {
+            static::assertInstanceOf(Router::class, $next[0]);
+            static::assertSame('handle', $next[1]);
+
+            static::assertInstanceOf(ServerRequest::class, $req);
+
+            return (new Factory())->createResponse(404, '')->withBody(Stream::create('subRouter2 404'));
+        });
+        $subRouter2->any('/api/peoples/{id:\d+}', static function ($req, $next) {
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
@@ -1357,6 +1365,14 @@ class RouterTest extends TestCase
         
         $this->router->any('/api/books/{id}', $subRouter1);
         $this->router->any('/api/peoples/{id}', $subRouter2);
+        $this->router->setDefault404(static function ($req, $next) {
+            static::assertInstanceOf(Router::class, $next[0]);
+            static::assertSame('handle', $next[1]);
+
+            static::assertInstanceOf(ServerRequest::class, $req);
+
+            return (new Factory())->createResponse(404, '')->withBody(Stream::create('router 404'));
+        });
 
         $request = (new Factory())->createServerRequest('GET', '/api/books/14');
 
@@ -1372,6 +1388,22 @@ class RouterTest extends TestCase
         $response = $this->router->dispatch($request);
         static::assertEquals(204, $response->getStatusCode());
         static::assertEquals('testRouterception peoples', $response->getBody());
+
+        // main router 404
+        $request = (new Factory())->createServerRequest('GET', '/ap');
+        $found = $this->router->findRouteRequest($request);
+        static::assertFalse($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(404, $response->getStatusCode());
+        static::assertEquals('router 404', $response->getBody());
+
+        // subRouter2 404 - here first router will find a route request because sub router 2 has a default 404
+        $request = (new Factory())->createServerRequest('GET', '/api/peoples/m');
+        $found = $this->router->findRouteRequest($request);
+        static::assertTrue($found);
+        $response = $this->router->dispatch($request);
+        static::assertEquals(404, $response->getStatusCode());
+        static::assertEquals('subRouter2 404', $response->getBody());
     }
 
     /**

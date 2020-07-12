@@ -517,7 +517,7 @@ class Router implements RequestHandlerInterface
                 return $middlewareInstance->process($request, $this);
             }
         } elseif ($middleware instanceof self) {
-            if ($middleware->findRouteRequest($request)) {
+            if ($middleware->findRouteRequest($request) || $middleware->default404 !== null) {
                 return $middleware->dispatch($request);
             }
 

@@ -32,6 +32,9 @@ $router->get('/posts', function ($request, $next) {
 // Find route
 $found = $router->findRoute('GET', '/posts');
 
+// You can use PSR-7 request for finding Route
+$found = $router->findRouteRequest(new \Rancoud\Http\Message\ServerRequest('GET', '/posts'));
+
 // Dispatch (response is a PSR7 object \Psr\Http\Message\Response)
 $response = $router->dispatch($request);
 
@@ -135,6 +138,46 @@ $subRouter2->any('/api/peoples/{id}', function ($req, $next){
 $router->any('/api/books/{id}', $subRouter1);
 $router->any('/api/peoples/{id}', $subRouter2);
 ```
+
+#### Default 404
+```php
+// you can set a default 404
+$router->setDefault404( static function ($request, $next) {
+    return (new \Rancoud\Http\Message\Factory\Factory())->createResponse(404, '')->withBody(Rancoud\Http\Message\Stream::create('404 content'));
+});
+
+// it will return false because no Route is matching
+$found = $router->findRoute('GET', '/posts');
+
+// response contains the default 404 callback
+$response = $router->dispatch($request);
+
+$response->send();
+```
+**WARNING with 404 and Router as Middleware**  
+```php
+// create new Router with default 404
+$subRouter = new Router();
+$subRouter->any('/posts/{id:\d+}', function ($req, $next){
+   return (new MessageFactory())->createResponse(200, null, [], 'read 1 post');
+});
+$subRouter->setDefault404( static function ($request, $next) {
+    return (new \Rancoud\Http\Message\Factory\Factory())->createResponse(404, '')->withBody(Rancoud\Http\Message\Stream::create('404 content from subRouter'));
+});
+
+// you can add a Router as middleware 
+$router->any('/posts/{id}', $subRouter);
+
+// it will return true because Router middleware is matching on /posts/{id}
+$found = $router->findRoute('GET', '/posts/incorrect');
+
+// response contains the default 404 callback from $subRouter
+$response = $router->dispatch($request);
+
+$response->send();
+```
+If you use Router as middleware **AND** set default 404 then `findRouteRequest` and `findRoute` will return `true`.  
+When calling `dispatch` it will use the callback setted as default 404 by the Router middleware.    
 
 ## Router Methods
 ### General Commands  
