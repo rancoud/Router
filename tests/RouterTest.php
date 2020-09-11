@@ -209,11 +209,16 @@ class RouterTest extends TestCase
     public function testFindRouteWithParametersAndSimpleRegexOnIt(): void
     {
         $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
+        $route->setName('custom-name');
         $route->setParametersConstraints(['locale' => 'fr|en', 'year' => '\d{4}']);
         $this->router->addRoute($route);
 
+        static::assertNull($this->router->getCurrentRoute());
+
         $found = $this->router->findRoute('GET', '/articles/fr/1990/myslug');
         static::assertTrue($found);
+
+        static::assertSame('custom-name', $this->router->getCurrentRoute()->getName());
 
         $parameters = $this->router->getRouteParameters();
         static::assertArrayHasKey('locale', $parameters);

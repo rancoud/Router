@@ -21,7 +21,7 @@ class Router implements RequestHandlerInterface
     /** @var string|null */
     protected ?string $method = null;
 
-    /** @var Route */
+    /** @var Route|null */
     protected ?Route $currentRoute = null;
 
     /** @var array */
@@ -196,6 +196,14 @@ class Router implements RequestHandlerInterface
     public function getRoutes(): array
     {
         return $this->routes;
+    }
+
+    /**
+     * @return Route|null
+     */
+    public function getCurrentRoute(): ?Route
+    {
+        return $this->currentRoute;
     }
 
     /**
