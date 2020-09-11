@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rancoud\Router\Test;
+namespace Rancoud\Router\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Rancoud\Router\Route;
@@ -18,7 +18,7 @@ class RouteTest extends TestCase
      */
     public function testConstructArrayMethods(): void
     {
-        $route = new Route(['GET', 'POST'], '/', function () {
+        $route = new Route(['GET', 'POST'], '/', static function () {
         });
         static::assertInstanceOf(Route::class, $route);
     }
@@ -28,7 +28,7 @@ class RouteTest extends TestCase
      */
     public function testConstructStringMethods(): void
     {
-        $route = new Route('POST', '/', function () {
+        $route = new Route('POST', '/', static function () {
         });
         static::assertInstanceOf(Route::class, $route);
     }
