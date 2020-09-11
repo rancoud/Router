@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rancoud\Router\Tests;
+namespace Rancoud\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Rancoud\Router\Route;
