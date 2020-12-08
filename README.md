@@ -16,7 +16,7 @@ composer require rancoud/router
 ```
 
 ## Dependencies
-[Http package](https://github.com/rancoud/Http)
+[Http package: https://github.com/rancoud/Http](https://github.com/rancoud/Http)
 
 ## How to use it?
 ### General Case
