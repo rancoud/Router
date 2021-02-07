@@ -223,7 +223,7 @@ class Route
         $url = $this->getUrl();
         $url = \preg_replace('/{(\w+?):(.+?)}/', '{$1}', $url);
         foreach ($routeParameters as $parameter => $value) {
-            $url = \str_replace('{' . $parameter . '}', $value, $url);
+            $url = \str_replace('{' . $parameter . '}', (string) $value, $url);
         }
 
         return $url;
