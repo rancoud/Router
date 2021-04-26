@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Rancoud\Router\Test;
+namespace tests;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Rancoud\Http\Message\Factory\Factory;
 use Rancoud\Http\Message\ServerRequest;
 use Rancoud\Http\Message\Stream;
@@ -25,7 +22,7 @@ class RouterTest extends TestCase
     /** @var Router */
     protected Router $router;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->router = new Router();
     }
@@ -57,7 +54,7 @@ class RouterTest extends TestCase
     {
         $this->router->get('/', static function () {
         })->setName('route a');
-        
+
         $routes = $this->router->getRoutes();
         static::assertCount(1, $routes);
         static::assertSame('route a', $routes[0]->getName());
@@ -205,7 +202,7 @@ class RouterTest extends TestCase
         static::assertArrayHasKey('id', $parameters);
         static::assertSame('aze', $parameters['id']);
     }
-    
+
     public function testFindRouteWithParametersAndSimpleRegexOnIt(): void
     {
         $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
@@ -247,7 +244,7 @@ class RouterTest extends TestCase
         $found = $this->router->findRoute('GET', '/articles/fr/199/myslug');
         static::assertFalse($found);
     }
-    
+
     public function testFindRouteWithParametersAndComplexRegexOnIt(): void
     {
         $ipRegex = '\b(?:(?:25[0-5]|2[0-4][0-9]|1?[1-9][0-9]?|10[0-9])(?:(?<!\.)\b|\.))';
@@ -298,11 +295,11 @@ class RouterTest extends TestCase
         $request = $request->withAttribute('attr', 'src');
 
         $this->router->get('/handleme', static function ($req, $next) {
-            static::assertEquals('src', $req->getAttribute('attr'));
+            static::assertSame('src', $req->getAttribute('attr'));
             static::assertInstanceOf(Router::class, $next[0]);
-            static::assertEquals('handle', $next[1]);
+            static::assertSame('handle', $next[1]);
 
-            return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+            return (new Factory())->createResponse()->withBody(Stream::create('ok'));
         });
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
@@ -310,8 +307,8 @@ class RouterTest extends TestCase
         $response = $this->router->dispatch($request);
 
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -321,7 +318,7 @@ class RouterTest extends TestCase
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
         $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
-        $response = (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+        $response = (new Factory())->createResponse()->withBody(Stream::create('ok'));
         $middleware->method('process')->willReturn($response);
         $this->router->get('/handleme', $middleware);
         $middleware->expects(static::once())->method('process');
@@ -330,8 +327,8 @@ class RouterTest extends TestCase
 
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -344,18 +341,18 @@ class RouterTest extends TestCase
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
-            static::assertEquals('src', $request->getAttribute('attr'));
-            static::assertEquals('8', $request->getAttribute('id'));
+            static::assertSame('src', $request->getAttribute('attr'));
+            static::assertSame('8', $request->getAttribute('id'));
 
-            return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+            return (new Factory())->createResponse()->withBody(Stream::create('ok'));
         });
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
 
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -370,8 +367,8 @@ class RouterTest extends TestCase
 
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -381,13 +378,13 @@ class RouterTest extends TestCase
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
         $this->router->addGlobalMiddleware(static function ($request, $next) {
-            static::assertEquals('src', $request->getAttribute('attr'));
+            static::assertSame('src', $request->getAttribute('attr'));
             $request = $request->withAttribute('global', 'middleware');
-            
+
             return $next($request);
         });
         $this->router->addGlobalMiddleware(static function ($request, $next) {
-            static::assertEquals('middleware', $request->getAttribute('global'));
+            static::assertSame('middleware', $request->getAttribute('global'));
             $request = $request->withAttribute('global2', 'middleware2');
 
             return $next($request);
@@ -396,18 +393,18 @@ class RouterTest extends TestCase
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
-            static::assertEquals('middleware', $request->getAttribute('global'));
-            static::assertEquals('middleware2', $request->getAttribute('global2'));
+            static::assertSame('middleware', $request->getAttribute('global'));
+            static::assertSame('middleware2', $request->getAttribute('global2'));
 
-            return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+            return (new Factory())->createResponse()->withBody(Stream::create('ok'));
         });
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
 
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -416,66 +413,65 @@ class RouterTest extends TestCase
     public function testAddGlobalMiddlewareAndRouteAddMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
-        
+
         $this->router->addGlobalMiddleware(static function ($request, $next) {
-            static::assertEquals('src', $request->getAttribute('attr'));
+            static::assertSame('src', $request->getAttribute('attr'));
             $request = $request->withAttribute('global', 'middleware');
 
             return $next($request);
         });
-        
+
         $this->router->addGlobalMiddleware(static function ($request, $next) {
-            static::assertEquals('middleware', $request->getAttribute('global'));
+            static::assertSame('middleware', $request->getAttribute('global'));
             $request = $request->withAttribute('global2', 'middleware2');
 
             return $next($request);
         });
-        
+
         $route = new Route('GET', '/handleme/{attr}/{id}', static function ($request, $next) {
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
-            static::assertEquals('middleware', $request->getAttribute('global'));
-            static::assertEquals('middleware2', $request->getAttribute('global2'));
+            static::assertSame('middleware', $request->getAttribute('global'));
+            static::assertSame('middleware2', $request->getAttribute('global2'));
 
-            static::assertEquals('r_middleware', $request->getAttribute('route'));
-            static::assertEquals('r_middleware2', $request->getAttribute('route2'));
-            
-            return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+            static::assertSame('r_middleware', $request->getAttribute('route'));
+            static::assertSame('r_middleware2', $request->getAttribute('route2'));
+
+            return (new Factory())->createResponse()->withBody(Stream::create('ok'));
         });
-        
+
         $route->addMiddleware(static function ($request, $next) {
-            static::assertEquals('middleware', $request->getAttribute('global'));
-            static::assertEquals('middleware2', $request->getAttribute('global2'));
+            static::assertSame('middleware', $request->getAttribute('global'));
+            static::assertSame('middleware2', $request->getAttribute('global2'));
             $request = $request->withAttribute('route', 'r_middleware');
 
             return $next($request);
         });
-        
+
         $route->addMiddleware(static function ($request, $next) {
-            static::assertEquals('middleware', $request->getAttribute('global'));
-            static::assertEquals('middleware2', $request->getAttribute('global2'));
-            static::assertEquals('r_middleware', $request->getAttribute('route'));
+            static::assertSame('middleware', $request->getAttribute('global'));
+            static::assertSame('middleware2', $request->getAttribute('global2'));
+            static::assertSame('r_middleware', $request->getAttribute('route'));
 
             $request = $request->withAttribute('route2', 'r_middleware2');
-            
+
             return $next($request);
         });
-        
+
         $this->router->addRoute($route);
-        
+
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
 
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
      * @throws RouterException
-     * @throws \ReflectionException
      */
     public function testSetupRouterAndRoutesWithConfigArray(): void
     {
@@ -492,16 +488,16 @@ class RouterTest extends TestCase
             ],
             'routes' => [
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{id}',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/{id}',
+                    'callback'    => 'callback',
                     'constraints' => ['id' => '\w+'],
                     'middlewares' => ['a', 'b'],
-                    'name' => 'route1'
+                    'name'        => 'route1'
                 ],
                 [
-                    'methods' => ['POST'],
-                    'url' => '/aze',
+                    'methods'  => ['POST'],
+                    'url'      => '/aze',
                     'callback' => 'callback',
                 ]
             ]
@@ -509,51 +505,50 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         $routes = $this->router->getRoutes();
-        static::assertSame(count($routes), 2);
+        static::assertSame(\count($routes), 2);
 
         $router = new ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
         $property->setAccessible(true);
-        static::assertEquals($config['router']['middlewares'], $property->getValue($this->router));
+        static::assertSame($config['router']['middlewares'], $property->getValue($this->router));
 
         $property = $router->getProperty('globalConstraints');
         $property->setAccessible(true);
-        static::assertEquals($config['router']['constraints'], $property->getValue($this->router));
+        static::assertSame($config['router']['constraints'], $property->getValue($this->router));
 
-        static::assertEquals($config['routes'][0]['methods'], $routes[0]->getMethods());
-        static::assertEquals($config['routes'][0]['middlewares'], $routes[0]->getMiddlewares());
-        static::assertEquals($config['routes'][0]['callback'], $routes[0]->getCallback());
-        static::assertEquals($config['routes'][0]['name'], $routes[0]->getName());
-        static::assertEquals($config['routes'][0]['url'], $routes[0]->getUrl());
-        static::assertEquals($config['routes'][0]['constraints'], $routes[0]->getParametersConstraints());
+        static::assertSame($config['routes'][0]['methods'], $routes[0]->getMethods());
+        static::assertSame($config['routes'][0]['middlewares'], $routes[0]->getMiddlewares());
+        static::assertSame($config['routes'][0]['callback'], $routes[0]->getCallback());
+        static::assertSame($config['routes'][0]['name'], $routes[0]->getName());
+        static::assertSame($config['routes'][0]['url'], $routes[0]->getUrl());
+        static::assertSame($config['routes'][0]['constraints'], $routes[0]->getParametersConstraints());
 
-        static::assertEquals($config['routes'][1]['methods'], $routes[1]->getMethods());
-        static::assertEquals([], $routes[1]->getMiddlewares());
-        static::assertEquals($config['routes'][1]['callback'], $routes[1]->getCallback());
-        static::assertEquals(null, $routes[1]->getName());
-        static::assertEquals($config['routes'][1]['url'], $routes[1]->getUrl());
-        static::assertEquals([], $routes[1]->getParametersConstraints());
+        static::assertSame($config['routes'][1]['methods'], $routes[1]->getMethods());
+        static::assertSame([], $routes[1]->getMiddlewares());
+        static::assertSame($config['routes'][1]['callback'], $routes[1]->getCallback());
+        static::assertNull($routes[1]->getName());
+        static::assertSame($config['routes'][1]['url'], $routes[1]->getUrl());
+        static::assertSame([], $routes[1]->getParametersConstraints());
     }
 
     /**
      * @throws RouterException
-     * @throws \ReflectionException
      */
     public function testSetupRouterAndRoutesWithConfigArrayNoRouterPart(): void
     {
         $config = [
             'routes' => [
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{id}',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/{id}',
+                    'callback'    => 'callback',
                     'constraints' => ['id' => '\w+'],
                     'middlewares' => ['a', 'b'],
-                    'name' => 'route1'
+                    'name'        => 'route1'
                 ],
                 [
-                    'methods' => ['POST'],
-                    'url' => '/aze',
+                    'methods'  => ['POST'],
+                    'url'      => '/aze',
                     'callback' => 'callback',
                 ]
             ]
@@ -561,13 +556,13 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         $routes = $this->router->getRoutes();
-        static::assertSame(count($routes), 2);
+        static::assertSame(\count($routes), 2);
 
         $router = new ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
         $property->setAccessible(true);
 
-        static::assertEquals([], $property->getValue($this->router));
+        static::assertSame([], $property->getValue($this->router));
     }
 
     public function testSetupRouterAndRoutesWithConfigArrayNoMiddlewareInRouterPart(): void
@@ -578,7 +573,7 @@ class RouterTest extends TestCase
 
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('Config router has to be an array');
-        
+
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
@@ -678,7 +673,7 @@ class RouterTest extends TestCase
             'routes' => [
                 [
                     'methods' => ['POST'],
-                    'url' => '/'
+                    'url'     => '/'
                 ]
             ]
         ];
@@ -694,9 +689,9 @@ class RouterTest extends TestCase
         $config = [
             'routes' => [
                 [
-                    'methods' => ['POST'],
-                    'url' => '/',
-                    'callback' => 'a',
+                    'methods'     => ['POST'],
+                    'url'         => '/',
+                    'callback'    => 'a',
                     'middlewares' => null
                 ]
             ]
@@ -713,10 +708,10 @@ class RouterTest extends TestCase
         $config = [
             'routes' => [
                 [
-                    'methods' => ['POST'],
-                    'url' => '/',
+                    'methods'  => ['POST'],
+                    'url'      => '/',
                     'callback' => 'a',
-                    'host' => null
+                    'host'     => null
                 ]
             ]
         ];
@@ -732,9 +727,9 @@ class RouterTest extends TestCase
         $config = [
             'routes' => [
                 [
-                    'methods' => ['POST'],
-                    'url' => '/',
-                    'callback' => 'a',
+                    'methods'          => ['POST'],
+                    'url'              => '/',
+                    'callback'         => 'a',
                     'host_constraints' => null
                 ]
             ]
@@ -751,10 +746,10 @@ class RouterTest extends TestCase
         $config = [
             'routes' => [
                 [
-                    'methods' => ['POST'],
-                    'url' => '/',
+                    'methods'  => ['POST'],
+                    'url'      => '/',
                     'callback' => 'a',
-                    'name' => null
+                    'name'     => null
                 ]
             ]
         ];
@@ -774,7 +769,7 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         $routes = $this->router->getRoutes();
-        static::assertSame(count($routes), 0);
+        static::assertSame(\count($routes), 0);
     }
 
     /**
@@ -812,31 +807,31 @@ class RouterTest extends TestCase
             ],
             'routes' => [
                 [
-                    'methods' => ['GET'],
-                    'url' => '/road',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/road',
+                    'callback'    => 'callback',
                     'constraints' => ['id' => '\w+'],
-                    'name' => 'route0'
+                    'name'        => 'route0'
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{lang}-{id}',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/{lang}-{id}',
+                    'callback'    => 'callback',
                     'constraints' => ['id' => '\w+'],
-                    'name' => 'route1'
+                    'name'        => 'route1'
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{id:\w+}/pagename',
+                    'methods'  => ['GET'],
+                    'url'      => '/{id:\w+}/pagename',
                     'callback' => 'callback',
-                    'name' => 'route2'
+                    'name'     => 'route2'
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{lang}/postname',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/{lang}/postname',
+                    'callback'    => 'callback',
                     'constraints' => ['lang' => 'jp'],
-                    'name' => 'route3'
+                    'name'        => 'route3'
                 ],
             ]
         ];
@@ -851,11 +846,11 @@ class RouterTest extends TestCase
         $urls[] = $this->router->generateUrl('route1');
         $urls[] = $this->router->generateUrl('no_route');
 
-        static::assertEquals('/road', $urls[0]);
-        static::assertEquals('/fr-2', $urls[1]);
-        static::assertEquals('/12/pagename', $urls[2]);
-        static::assertEquals('/jp/postname', $urls[3]);
-        static::assertEquals('/{lang}-{id}', $urls[4]);
+        static::assertSame('/road', $urls[0]);
+        static::assertSame('/fr-2', $urls[1]);
+        static::assertSame('/12/pagename', $urls[2]);
+        static::assertSame('/jp/postname', $urls[3]);
+        static::assertSame('/{lang}-{id}', $urls[4]);
         static::assertNull($urls[5]);
     }
 
@@ -872,31 +867,31 @@ class RouterTest extends TestCase
             ],
             'routes' => [
                 [
-                    'methods' => ['GET'],
-                    'url' => '/road',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/road',
+                    'callback'    => 'callback',
                     'constraints' => ['id' => '\w+'],
-                    'name' => 'route0'
+                    'name'        => 'route0'
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{lang}-{id}',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/{lang}-{id}',
+                    'callback'    => 'callback',
                     'constraints' => ['id' => '\w+'],
-                    'name' => 'route1'
+                    'name'        => 'route1'
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{id:\w+}/pagename',
+                    'methods'  => ['GET'],
+                    'url'      => '/{id:\w+}/pagename',
                     'callback' => 'callback',
-                    'name' => 'route2'
+                    'name'     => 'route2'
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{lang}/postname',
-                    'callback' => 'callback',
+                    'methods'     => ['GET'],
+                    'url'         => '/{lang}/postname',
+                    'callback'    => 'callback',
                     'constraints' => ['lang' => 'jp'],
-                    'name' => 'route3'
+                    'name'        => 'route3'
                 ],
             ]
         ];
@@ -913,14 +908,14 @@ class RouterTest extends TestCase
         $urls[] = $this->router->generateUrl('route1');
         $urls[] = $this->router->generateUrl('no_route');
 
-        static::assertEquals('/road', $urls[0]);
-        static::assertEquals('/fr-2', $urls[1]);
-        static::assertEquals('/12/pagename', $urls[2]);
-        static::assertEquals('/jp/postname', $urls[3]);
-        static::assertEquals('/{lang}-{id}', $urls[4]);
+        static::assertSame('/road', $urls[0]);
+        static::assertSame('/fr-2', $urls[1]);
+        static::assertSame('/12/pagename', $urls[2]);
+        static::assertSame('/jp/postname', $urls[3]);
+        static::assertSame('/{lang}-{id}', $urls[4]);
         static::assertNull($urls[5]);
     }
-    
+
     public function testSetGlobalHostRouter(): void
     {
         $host = 'api.toto.com';
@@ -943,7 +938,7 @@ class RouterTest extends TestCase
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
     }
-    
+
     public function testSetHost(): void
     {
         $host = 'api.toto.com';
@@ -961,7 +956,7 @@ class RouterTest extends TestCase
         $serverHost = ['SERVER_NAME' => 'api.toto.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
-        
+
         $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
@@ -1089,11 +1084,11 @@ class RouterTest extends TestCase
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
-            static::assertEquals('1990', $req->getAttribute('subdomain'));
-            static::assertEquals('toto', $req->getAttribute('domain'));
-            static::assertEquals('com', $req->getAttribute('tld'));
+            static::assertSame('1990', $req->getAttribute('subdomain'));
+            static::assertSame('toto', $req->getAttribute('domain'));
+            static::assertSame('com', $req->getAttribute('tld'));
 
-            return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+            return (new Factory())->createResponse()->withBody(Stream::create('ok'));
         });
         $route->setHost($host);
         $this->router->addRoute($route);
@@ -1106,51 +1101,50 @@ class RouterTest extends TestCase
 
     /**
      * @throws RouterException
-     * @throws \ReflectionException
      */
     public function testConfigWithHostAndConstraints(): void
     {
         $config = [
             'router' => [
-                'host' => '{subdomain:api|backoffice}.{domain}.{tld}',
+                'host'             => '{subdomain:api|backoffice}.{domain}.{tld}',
                 'host_constraints' => [
                     'domain' => '\d{4}'
                 ]
             ],
             'routes' => [
                 [
-                    'methods' => ['GET'],
-                    'url' => '/common',
+                    'methods'  => ['GET'],
+                    'url'      => '/common',
                     'callback' => static function ($req, $next) {
                         static::assertInstanceOf(Router::class, $next[0]);
                         static::assertSame('handle', $next[1]);
 
-                        static::assertEquals('api', $req->getAttribute('subdomain'));
-                        static::assertEquals('2000', $req->getAttribute('domain'));
-                        static::assertEquals('com', $req->getAttribute('tld'));
+                        static::assertSame('api', $req->getAttribute('subdomain'));
+                        static::assertSame('2000', $req->getAttribute('domain'));
+                        static::assertSame('com', $req->getAttribute('tld'));
 
-                        return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+                        return (new Factory())->createResponse()->withBody(Stream::create('ok'));
                     },
                     'name' => 'route0',
                 ],
                 [
-                    'methods' => ['GET'],
-                    'url' => '/special',
+                    'methods'  => ['GET'],
+                    'url'      => '/special',
                     'callback' => static function ($req, $next) {
                         static::assertInstanceOf(Router::class, $next[0]);
                         static::assertSame('handle', $next[1]);
 
-                        static::assertEquals('api', $req->getAttribute('subdomain'));
-                        static::assertEquals('2000', $req->getAttribute('domain'));
-                        static::assertEquals('com', $req->getAttribute('tld'));
+                        static::assertSame('api', $req->getAttribute('subdomain'));
+                        static::assertSame('2000', $req->getAttribute('domain'));
+                        static::assertSame('com', $req->getAttribute('tld'));
 
-                        return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
+                        return (new Factory())->createResponse()->withBody(Stream::create('ok'));
                     },
-                    'name' => 'route1',
-                    'host' => '{subdomain}.{domain}.{tld}',
+                    'name'             => 'route1',
+                    'host'             => '{subdomain}.{domain}.{tld}',
                     'host_constraints' => [
                         'subdomain' => 'api',
-                        'tld' => 'com'
+                        'tld'       => 'com'
                     ]
                 ]
             ]
@@ -1161,16 +1155,16 @@ class RouterTest extends TestCase
         $router = new ReflectionClass($this->router);
         $property = $router->getProperty('currentRoute');
         $property->setAccessible(true);
-        
+
         $serverHost = ['HTTP_HOST' => 'backoffice.2000.com'];
         $request = new ServerRequest('GET', '/common', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
-        static::assertEquals('route0', $property->getValue($this->router)->getName());
+        static::assertSame('route0', $property->getValue($this->router)->getName());
 
         $serverHost = ['HTTP_HOST' => 'api.2000.com'];
         $request = new ServerRequest('GET', '/special', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
-        static::assertEquals('route1', $property->getValue($this->router)->getName());
+        static::assertSame('route1', $property->getValue($this->router)->getName());
         $this->router->dispatch($request);
 
         $serverHost = ['HTTP_HOST' => 'api.2000.fr'];
@@ -1190,7 +1184,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(RouterException::class);
         $this->expectExceptionMessage('No route found to dispatch');
-        
+
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->dispatch($request);
     }
@@ -1207,14 +1201,14 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
+            return (new Factory())->createResponse(404)->withBody(Stream::create('404'));
         });
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('404', $response->getBody());
+        static::assertSame(404, $response->getStatusCode());
+        static::assertSame('404', (string) $response->getBody());
     }
-    
+
     public function testDispatch404Error(): void
     {
         $this->expectException(RouterException::class);
@@ -1234,7 +1228,7 @@ class RouterTest extends TestCase
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->dispatch($request);
     }
-    
+
     public function testHandleWithClosureNext(): void
     {
         $this->expectException(RouterException::class);
@@ -1273,7 +1267,7 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
+            return (new Factory())->createResponse(404)->withBody(Stream::create('404'));
         });
         $this->router->get('/', static function ($req, $next) {
             return $next($req);
@@ -1281,8 +1275,8 @@ class RouterTest extends TestCase
         $this->router->findRouteRequest($request);
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('404', $response->getBody());
+        static::assertSame(404, $response->getStatusCode());
+        static::assertSame('404', (string) $response->getBody());
     }
 
     /**
@@ -1291,15 +1285,15 @@ class RouterTest extends TestCase
     public function testDispatch404Middleware(): void
     {
         $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
-        $response = (new Factory())->createResponse(404, '')->withBody(Stream::create('404'));
+        $response = (new Factory())->createResponse(404)->withBody(Stream::create('404'));
         $middleware->method('process')->willReturn($response);
-        
+
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404($middleware);
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('404', $response->getBody());
+        static::assertSame(404, $response->getStatusCode());
+        static::assertSame('404', (string) $response->getBody());
     }
 
     /**
@@ -1311,8 +1305,8 @@ class RouterTest extends TestCase
         $this->router->setDefault404(ExampleMiddleware::class);
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -1327,12 +1321,12 @@ class RouterTest extends TestCase
         ];
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
-        
+
         $request = (new Factory())->createServerRequest('GET', '/');
         $response = $this->router->dispatch($request);
         static::assertNotNull($response);
-        static::assertEquals(200, $response->getStatusCode());
-        static::assertEquals('ok', $response->getBody());
+        static::assertSame(200, $response->getStatusCode());
+        static::assertSame('ok', (string) $response->getBody());
     }
 
     /**
@@ -1347,7 +1341,7 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(300, '')->withBody(Stream::create('testRouterception books'));
+            return (new Factory())->createResponse(300)->withBody(Stream::create('testRouterception books'));
         });
 
         $subRouter2 = new Router();
@@ -1357,7 +1351,7 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(404, '')->withBody(Stream::create('subRouter2 404'));
+            return (new Factory())->createResponse(404)->withBody(Stream::create('subRouter2 404'));
         });
         $subRouter2->any('/api/peoples/{id:\d+}', static function ($req, $next) {
             static::assertInstanceOf(Router::class, $next[0]);
@@ -1365,9 +1359,9 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(204, '')->withBody(Stream::create('testRouterception peoples'));
+            return (new Factory())->createResponse(204)->withBody(Stream::create('testRouterception peoples'));
         });
-        
+
         $this->router->any('/api/books/{id}', $subRouter1);
         $this->router->any('/api/peoples/{id}', $subRouter2);
         $this->router->setDefault404(static function ($req, $next) {
@@ -1376,7 +1370,7 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(404, '')->withBody(Stream::create('router 404'));
+            return (new Factory())->createResponse(404)->withBody(Stream::create('router 404'));
         });
 
         $request = (new Factory())->createServerRequest('GET', '/api/books/14');
@@ -1384,31 +1378,31 @@ class RouterTest extends TestCase
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(300, $response->getStatusCode());
-        static::assertEquals('testRouterception books', $response->getBody());
+        static::assertSame(300, $response->getStatusCode());
+        static::assertSame('testRouterception books', (string) $response->getBody());
 
         $request = (new Factory())->createServerRequest('GET', '/api/peoples/14');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(204, $response->getStatusCode());
-        static::assertEquals('testRouterception peoples', $response->getBody());
+        static::assertSame(204, $response->getStatusCode());
+        static::assertSame('testRouterception peoples', (string) $response->getBody());
 
         // main router 404
         $request = (new Factory())->createServerRequest('GET', '/ap');
         $found = $this->router->findRouteRequest($request);
         static::assertFalse($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('router 404', $response->getBody());
+        static::assertSame(404, $response->getStatusCode());
+        static::assertSame('router 404', (string) $response->getBody());
 
         // subRouter2 404 - here first router will find a route request because sub router 2 has a default 404
         $request = (new Factory())->createServerRequest('GET', '/api/peoples/m');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('subRouter2 404', $response->getBody());
+        static::assertSame(404, $response->getStatusCode());
+        static::assertSame('subRouter2 404', (string) $response->getBody());
     }
 
     /**
@@ -1423,7 +1417,7 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(300, '')->withBody(Stream::create('testRouterception books'));
+            return (new Factory())->createResponse(300)->withBody(Stream::create('testRouterception books'));
         });
 
         $subRouter2 = new Router();
@@ -1433,19 +1427,19 @@ class RouterTest extends TestCase
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(204, '')->withBody(Stream::create('testRouterception peoples'));
+            return (new Factory())->createResponse(204)->withBody(Stream::create('testRouterception peoples'));
         });
 
         $this->router->addGlobalMiddleware($subRouter1);
         $this->router->addGlobalMiddleware($subRouter2);
-        
+
         $this->router->any('/api/{items}/{id}', static function ($req, $next) {
             static::assertInstanceOf(Router::class, $next[0]);
             static::assertSame('handle', $next[1]);
 
             static::assertInstanceOf(ServerRequest::class, $req);
 
-            return (new Factory())->createResponse(404, '')->withBody(Stream::create('no match'));
+            return (new Factory())->createResponse(404)->withBody(Stream::create('no match'));
         });
 
         $request = (new Factory())->createServerRequest('GET', '/api/books/14');
@@ -1453,22 +1447,22 @@ class RouterTest extends TestCase
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(300, $response->getStatusCode());
-        static::assertEquals('testRouterception books', $response->getBody());
+        static::assertSame(300, $response->getStatusCode());
+        static::assertSame('testRouterception books', (string) $response->getBody());
 
         $request = (new Factory())->createServerRequest('GET', '/api/peoples/14');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(204, $response->getStatusCode());
-        static::assertEquals('testRouterception peoples', $response->getBody());
+        static::assertSame(204, $response->getStatusCode());
+        static::assertSame('testRouterception peoples', (string) $response->getBody());
 
         $request = (new Factory())->createServerRequest('GET', '/api/bottles/14');
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
         $response = $this->router->dispatch($request);
-        static::assertEquals(404, $response->getStatusCode());
-        static::assertEquals('no match', $response->getBody());
+        static::assertSame(404, $response->getStatusCode());
+        static::assertSame('no match', (string) $response->getBody());
     }
 
     /**
@@ -1516,7 +1510,7 @@ class RouterTest extends TestCase
         static::assertSame('rty', $parameters['category']);
         static::assertSame('5', $parameters['offset']);
         static::assertSame('8', $parameters['count']);
-        
+
         $found = $this->router->findRoute('GET', '/aze/rty/5');
         static::assertTrue($found);
 
@@ -1525,7 +1519,7 @@ class RouterTest extends TestCase
         static::assertSame('rty', $parameters['category']);
         static::assertSame('5', $parameters['offset']);
         static::assertSame(4, $parameters['count']);
-        
+
         $found = $this->router->findRoute('GET', '/aze/rty');
         static::assertTrue($found);
 
@@ -1534,7 +1528,7 @@ class RouterTest extends TestCase
         static::assertSame('rty', $parameters['category']);
         static::assertSame(3, $parameters['offset']);
         static::assertSame(4, $parameters['count']);
-        
+
         $found = $this->router->findRoute('GET', '/aze');
         static::assertTrue($found);
 
@@ -1559,9 +1553,9 @@ class RouterTest extends TestCase
         $config = [
             'routes' => [
                 [
-                    'methods' => ['POST'],
-                    'url' => '/',
-                    'callback' => 'a',
+                    'methods'              => ['POST'],
+                    'url'                  => '/',
+                    'callback'             => 'a',
                     'optionals_parameters' => null
                 ]
             ]
@@ -1581,9 +1575,9 @@ class RouterTest extends TestCase
         $config = [
             'routes' => [
                 [
-                    'methods' => ['GET'],
-                    'url' => '/{items}',
-                    'callback' => 'a',
+                    'methods'              => ['GET'],
+                    'url'                  => '/{items}',
+                    'callback'             => 'a',
                     'optionals_parameters' => ['items' => 'azerty']
                 ]
             ]
@@ -1603,16 +1597,4 @@ class RouterTest extends TestCase
         $parameters = $this->router->getRouteParameters();
         static::assertSame('azerty', $parameters['items']);
     }
-}
-
-class ExampleMiddleware implements MiddlewareInterface
-{
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        return (new Factory())->createResponse(200, '')->withBody(Stream::create('ok'));
-    }
-}
-
-class InvalidClass
-{
 }
