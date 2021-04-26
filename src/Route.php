@@ -315,7 +315,7 @@ class Route
     }
 
     /**
-     * @param $optionalsParameters
+     * @param array $optionalsParameters
      */
     public function setOptionalsParameters(array $optionalsParameters): void
     {
