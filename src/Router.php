@@ -726,7 +726,7 @@ class Router implements RequestHandlerInterface
     {
         foreach ($this->routes as $route) {
             if ($route->getCallback() instanceof self) {
-                $url = ($route->getCallback())->generateUrl($routeName, $routeParameters);
+                $url = $route->getCallback()->generateUrl($routeName, $routeParameters);
                 if ($url !== null) {
                     return $url;
                 }
