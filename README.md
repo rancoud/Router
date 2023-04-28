@@ -300,11 +300,11 @@ Handle is from the PSR17 in Psr\Http\Message\ServerRequestInterface, it's useful
 ## Route Constructor
 ### Settings
 #### Mandatory
-| Parameter | Type | Description |
-| --- | --- | --- |
-| methods | string \| array | methods matching with the route |
-| url | string | url to match |
-| callback | string \| Closure \| \Psr\Http\Server\MiddlewareInterface \| \Rancoud\Router\Router | callback when route is calling by router |
+| Parameter | Type                                                                                | Description                              |
+|-----------|-------------------------------------------------------------------------------------|------------------------------------------|
+| methods   | string \| array                                                                     | methods matching with the route          |
+| url       | string                                                                              | url to match                             |
+| callback  | string \| Closure \| \Psr\Http\Server\MiddlewareInterface \| \Rancoud\Router\Router | callback when route is calling by router |
 
 ## Route Methods
 ### General Commands  

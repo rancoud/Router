@@ -505,7 +505,7 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         $routes = $this->router->getRoutes();
-        static::assertSame(\count($routes), 2);
+        static::assertCount(2, $routes);
 
         $router = new ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
@@ -556,7 +556,7 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         $routes = $this->router->getRoutes();
-        static::assertSame(\count($routes), 2);
+        static::assertCount(2, $routes);
 
         $router = new ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
@@ -769,7 +769,7 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
         $routes = $this->router->getRoutes();
-        static::assertSame(\count($routes), 0);
+        static::assertCount(0, $routes);
     }
 
     /**
