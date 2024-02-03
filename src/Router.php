@@ -235,7 +235,7 @@ class Router implements RequestHandlerInterface
      *
      * @return bool
      */
-    public function findRoute(string $method, string $url, string $host = null): bool
+    public function findRoute(string $method, string $url, ?string $host = null): bool
     {
         $this->method = $method;
         $this->url = $this->removeQueryFromUrl($url);
