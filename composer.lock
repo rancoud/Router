@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "402b3dbb410abb25088ed8da1695e69c",
+    "content-hash": "c996c42bf1a089023a680cf5418149bf",
     "packages": [
         {
             "name": "rancoud/http",
-            "version": "3.3.0",
+            "version": "4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rancoud/Http.git",
-                "reference": "75f3d4142565d9d9ccd5cebfdff0bb9ad35578d6"
+                "reference": "fd5b6aae261b6359dbc738dd41059c2bba4e650c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rancoud/Http/zipball/75f3d4142565d9d9ccd5cebfdff0bb9ad35578d6",
-                "reference": "75f3d4142565d9d9ccd5cebfdff0bb9ad35578d6",
+                "url": "https://api.github.com/repos/rancoud/Http/zipball/fd5b6aae261b6359dbc738dd41059c2bba4e650c",
+                "reference": "fd5b6aae261b6359dbc738dd41059c2bba4e650c",
                 "shasum": ""
             },
             "require": {
@@ -27,7 +27,7 @@
             },
             "provide": {
                 "psr/http-factory-implementation": "1.0",
-                "psr/http-message-implementation": "1.0"
+                "psr/http-message-implementation": "2.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.16 || ^3.0",
@@ -55,9 +55,9 @@
             "description": "Http package",
             "support": {
                 "issues": "https://github.com/rancoud/Http/issues",
-                "source": "https://github.com/rancoud/Http/tree/3.3.0"
+                "source": "https://github.com/rancoud/Http/tree/4.0.0"
             },
-            "time": "2024-12-06T01:18:48+00:00"
+            "time": "2024-12-07T10:04:41+00:00"
         }
     ],
     "packages-dev": [
@@ -4436,12 +4436,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.4.0"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
