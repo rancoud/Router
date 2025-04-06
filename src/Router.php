@@ -15,60 +15,41 @@ class Router implements RequestHandlerInterface
     /** @var Route[] */
     protected array $routes = [];
 
-    /** @var string|null */
     protected ?string $url = null;
 
-    /** @var string|null */
     protected ?string $method = null;
 
-    /** @var Route|null */
     protected ?Route $currentRoute = null;
 
-    /** @var array */
     protected array $routeParameters = [];
 
-    /** @var array */
     protected array $middlewaresInPipe = [];
 
-    /** @var int */
     protected int $currentMiddlewareInPipeIndex = 0;
 
-    /** @var array */
     protected array $globalMiddlewares = [];
 
-    /** @var array */
     protected array $globalConstraints = [];
 
-    /** @var string|null */
     protected ?string $host = null;
 
-    /** @var string|null */
     protected ?string $hostRouter = null;
 
-    /** @var array */
     protected array $hostConstraints = [];
 
-    /** @var array */
     protected array $hostParameters = [];
 
-    /** @var mixed */
     protected $default404;
 
-    /**
-     * @param Route $route
-     */
     public function addRoute(Route $route): void
     {
         $this->routes[] = $route;
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function get(string $url, $callback): Route
     {
@@ -79,12 +60,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function post(string $url, $callback): Route
     {
@@ -95,12 +73,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function put(string $url, $callback): Route
     {
@@ -111,12 +86,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function patch(string $url, $callback): Route
     {
@@ -127,12 +99,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function delete(string $url, $callback): Route
     {
@@ -143,12 +112,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function options(string $url, $callback): Route
     {
@@ -159,12 +125,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $url
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
-     *
-     * @return Route
      */
     public function any(string $url, $callback): Route
     {
@@ -175,7 +138,6 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string                                     $prefixPath
      * @param string|\Closure|MiddlewareInterface|Router $callback
      *
      * @throws RouterException
@@ -198,19 +160,11 @@ class Router implements RequestHandlerInterface
         return $this->routes;
     }
 
-    /**
-     * @return Route|null
-     */
     public function getCurrentRoute(): ?Route
     {
         return $this->currentRoute;
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return bool
-     */
     public function findRouteRequest(ServerRequestInterface $request): bool
     {
         /* @var $request \Rancoud\Http\Message\ServerRequest */
@@ -228,13 +182,6 @@ class Router implements RequestHandlerInterface
         return $this->find();
     }
 
-    /**
-     * @param string      $method
-     * @param string      $url
-     * @param string|null $host
-     *
-     * @return bool
-     */
     public function findRoute(string $method, string $url, ?string $host = null): bool
     {
         $this->method = $method;
@@ -244,9 +191,6 @@ class Router implements RequestHandlerInterface
         return $this->find();
     }
 
-    /**
-     * @return bool
-     */
     protected function find(): bool
     {
         $this->currentRoute = null;
@@ -281,11 +225,6 @@ class Router implements RequestHandlerInterface
         return false;
     }
 
-    /**
-     * @param string $url
-     *
-     * @return string
-     */
     protected function removeQueryFromUrl(string $url): string
     {
         $queryPathPosition = \mb_strpos($url, '?');
@@ -297,9 +236,6 @@ class Router implements RequestHandlerInterface
         return $url;
     }
 
-    /**
-     * @return bool
-     */
     protected function isNotSameRouterHost(): bool
     {
         if ($this->hostRouter === null) {
@@ -335,9 +271,6 @@ class Router implements RequestHandlerInterface
         return true;
     }
 
-    /**
-     * @param array $hostParameters
-     */
     protected function saveHostParameters(array $hostParameters): void
     {
         $this->hostParameters = [];
@@ -349,12 +282,6 @@ class Router implements RequestHandlerInterface
         }
     }
 
-    /**
-     * @param string $string
-     * @param string $arrayName
-     *
-     * @return string
-     */
     protected function extractInlineContraints(string $string, string $arrayName): string
     {
         \preg_match('/{(\w+?):(.+?)}/', $string, $parameters);
@@ -372,21 +299,11 @@ class Router implements RequestHandlerInterface
         return $string;
     }
 
-    /**
-     * @param Route $route
-     *
-     * @return bool
-     */
     protected function isNotSameRouteMethod(Route $route): bool
     {
         return !\in_array($this->method, $route->getMethods(), true);
     }
 
-    /**
-     * @param Route $route
-     *
-     * @return bool
-     */
     protected function isNotSameRouteHost(Route $route): bool
     {
         if ($this->host === null && $route->getHost() === null) {
@@ -400,10 +317,6 @@ class Router implements RequestHandlerInterface
         return !$route->isSameHost($this->host, $this->hostConstraints);
     }
 
-    /**
-     * @param array $routeParameters
-     * @param array $optionalsParameters
-     */
     protected function saveRouteParameters(array $routeParameters, array $optionalsParameters): void
     {
         $this->routeParameters = [];
@@ -421,20 +334,13 @@ class Router implements RequestHandlerInterface
         }
     }
 
-    /**
-     * @return array
-     */
     public function getRouteParameters(): array
     {
         return $this->routeParameters;
     }
 
     /**
-     * @param ServerRequestInterface $request
-     *
      * @throws RouterException
-     *
-     * @return ResponseInterface
      */
     public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
@@ -460,11 +366,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param ServerRequestInterface $request
-     *
      * @throws RouterException
-     *
-     * @return ResponseInterface
      */
     protected function generate404(ServerRequestInterface $request): ResponseInterface
     {
@@ -498,11 +400,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param ServerRequestInterface $request
-     *
      * @throws RouterException
-     *
-     * @return ResponseInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -561,17 +459,12 @@ class Router implements RequestHandlerInterface
         $this->globalMiddlewares[] = $middleware;
     }
 
-    /**
-     * @param array $middlewares
-     */
     public function setGlobalMiddlewares(array $middlewares): void
     {
         $this->globalMiddlewares = $middlewares;
     }
 
     /**
-     * @param array $config
-     *
      * @throws RouterException
      */
     public function setupRouterAndRoutesWithConfigArray(array $config): void
@@ -581,8 +474,6 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param array $config
-     *
      * @throws RouterException
      */
     protected function treatRouterConfig(array $config): void
@@ -633,8 +524,6 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param array $config
-     *
      * @throws RouterException
      */
     protected function treatRoutesConfig(array $config): void
@@ -712,20 +601,11 @@ class Router implements RequestHandlerInterface
         }
     }
 
-    /**
-     * @param array $constraints
-     */
     public function setGlobalParametersConstraints(array $constraints): void
     {
         $this->globalConstraints = $constraints;
     }
 
-    /**
-     * @param string $routeName
-     * @param array  $routeParameters
-     *
-     * @return string|null
-     */
     public function generateUrl(string $routeName, array $routeParameters = []): ?string
     {
         foreach ($this->routes as $route) {
@@ -742,17 +622,11 @@ class Router implements RequestHandlerInterface
         return null;
     }
 
-    /**
-     * @param array $constraints
-     */
     public function setGlobalHostConstraints(array $constraints): void
     {
         $this->hostConstraints = $constraints;
     }
 
-    /**
-     * @param string $host
-     */
     public function setGlobalHost(string $host): void
     {
         $this->hostRouter = $host;
