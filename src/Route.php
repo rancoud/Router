@@ -11,41 +11,31 @@ use Rancoud\Http\Message\Request;
  */
 class Route
 {
-    /** @var array */
     protected array $methods = [];
 
-    /** @var string */
     protected string $url = '';
 
     /** @var \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string|null */
     protected $callback;
 
-    /** @var array */
     protected array $constraints = [];
 
-    /** @var array */
     protected array $middlewares = [];
 
-    /** @var string|null */
     protected ?string $name = null;
 
-    /** @var string|null */
     protected ?string $host = null;
 
-    /** @var array */
     protected array $hostConstraints = [];
 
-    /** @var array */
     protected array $hostParameters = [];
 
-    /** @var array */
     protected array $optionalsParameters = [];
 
     /**
      * Route constructor.
      *
      * @param array|string                                                $methods
-     * @param string                                                      $url
      * @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
@@ -81,8 +71,6 @@ class Route
     }
 
     /**
-     * @param string $url
-     *
      * @throws RouterException
      */
     protected function setUrl(string $url): void
@@ -94,19 +82,11 @@ class Route
         $this->url = $url;
     }
 
-    /**
-     * @return array
-     */
     public function getMethods(): array
     {
         return $this->methods;
     }
 
-    /**
-     * @param array $globalConstraints
-     *
-     * @return string
-     */
     public function compileRegex(array $globalConstraints): string
     {
         $url = $this->extractInlineContraints($this->url, 'constraints');
@@ -126,12 +106,6 @@ class Route
         return $regex;
     }
 
-    /**
-     * @param string $string
-     * @param string $arrayName
-     *
-     * @return string
-     */
     protected function extractInlineContraints(string $string, string $arrayName): string
     {
         \preg_match('/{(\w+?):(.+?)}/', $string, $parameters);
@@ -149,9 +123,6 @@ class Route
         return $string;
     }
 
-    /**
-     * @param array $constraints
-     */
     public function setParametersConstraints(array $constraints): void
     {
         $this->constraints = $constraints;
@@ -173,51 +144,31 @@ class Route
         $this->middlewares[] = $middleware;
     }
 
-    /**
-     * @return array
-     */
     public function getMiddlewares(): array
     {
         return $this->middlewares;
     }
 
-    /**
-     * @param string $name
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getUrl(): string
     {
         return $this->url;
     }
 
-    /**
-     * @return array
-     */
     public function getParametersConstraints(): array
     {
         return $this->constraints;
     }
 
-    /**
-     * @param array $routeParameters
-     *
-     * @return string
-     */
     public function generateUrl(array $routeParameters = []): string
     {
         $url = $this->getUrl();
@@ -229,38 +180,22 @@ class Route
         return $url;
     }
 
-    /**
-     * @param string $host
-     * @param array  $hostConstraints
-     */
     public function setHost(string $host, array $hostConstraints = []): void
     {
         $this->host = $host;
         $this->hostConstraints = $hostConstraints;
     }
 
-    /**
-     * @param array $hostConstraints
-     */
     public function setHostConstraints(array $hostConstraints): void
     {
         $this->hostConstraints = $hostConstraints;
     }
 
-    /**
-     * @return string|null
-     */
     public function getHost(): ?string
     {
         return $this->host;
     }
 
-    /**
-     * @param string $host
-     * @param array  $globalConstraints
-     *
-     * @return bool
-     */
     public function isSameHost(string $host, array $globalConstraints): bool
     {
         if ($this->host === null) {
@@ -292,9 +227,6 @@ class Route
         return false;
     }
 
-    /**
-     * @param array $hostParameters
-     */
     protected function saveHostParameters(array $hostParameters): void
     {
         $this->hostParameters = [];
@@ -306,25 +238,16 @@ class Route
         }
     }
 
-    /**
-     * @return array
-     */
     public function getHostParameters(): array
     {
         return $this->hostParameters;
     }
 
-    /**
-     * @param array $optionalsParameters
-     */
     public function setOptionalsParameters(array $optionalsParameters): void
     {
         $this->optionalsParameters = $optionalsParameters;
     }
 
-    /**
-     * @return array
-     */
     public function getOptionalsParameters(): array
     {
         return $this->optionalsParameters;

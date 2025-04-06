@@ -19,7 +19,6 @@ use ReflectionClass;
  */
 class RouterTest extends TestCase
 {
-    /** @var Router */
     protected Router $router;
 
     protected function setUp(): void
