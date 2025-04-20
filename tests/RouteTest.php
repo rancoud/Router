@@ -10,62 +10,53 @@ use Rancoud\Router\RouterException;
 
 /**
  * Class RouterTest.
+ *
+ * @internal
  */
 class RouteTest extends TestCase
 {
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testConstructArrayMethods(): void
     {
-        $route = new Route(['GET', 'POST'], '/', static function () {
-        });
+        $route = new Route(['GET', 'POST'], '/', static function (): void {});
         static::assertInstanceOf(Route::class, $route);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testConstructStringMethods(): void
     {
-        $route = new Route('POST', '/', static function () {
-        });
+        $route = new Route('POST', '/', static function (): void {});
         static::assertInstanceOf(Route::class, $route);
     }
 
     public function testConstructRouterException(): void
     {
         try {
-            new Route('', '/', static function () {
-            });
+            new Route('', '/', static function (): void {});
         } catch (RouterException $e) {
             static::assertInstanceOf(RouterException::class, $e);
         }
 
         try {
-            new Route(false, '/', static function () {
-            });
+            new Route(false, '/', static function (): void {});
         } catch (RouterException $e) {
             static::assertInstanceOf(RouterException::class, $e);
         }
 
         try {
-            new Route('method', '/', static function () {
-            });
+            new Route('method', '/', static function (): void {});
         } catch (RouterException $e) {
             static::assertInstanceOf(RouterException::class, $e);
         }
 
         try {
-            new Route('get', '/', static function () {
-            });
+            new Route('get', '/', static function (): void {});
         } catch (RouterException $e) {
             static::assertInstanceOf(RouterException::class, $e);
         }
 
         try {
-            new Route('GET', '', static function () {
-            });
+            new Route('GET', '', static function (): void {});
         } catch (RouterException $e) {
             static::assertInstanceOf(RouterException::class, $e);
         }

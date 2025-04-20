@@ -12,10 +12,11 @@ use Rancoud\Http\Message\Stream;
 use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 use Rancoud\Router\RouterException;
-use ReflectionClass;
 
 /**
  * Class RouterTest.
+ *
+ * @internal
  */
 class RouterTest extends TestCase
 {
@@ -26,154 +27,111 @@ class RouterTest extends TestCase
         $this->router = new Router();
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testAddRoute(): void
     {
-        $this->router->addRoute(new Route('GET', '/', static function () {
-        }));
+        $this->router->addRoute(new Route('GET', '/', static function (): void {}));
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutGet(): void
     {
-        $this->router->get('/', static function () {
-        });
+        $this->router->get('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutGetFluent(): void
     {
-        $this->router->get('/', static function () {
-        })->setName('route a');
+        $this->router->get('/', static function (): void {})->setName('route a');
 
         $routes = $this->router->getRoutes();
         static::assertCount(1, $routes);
         static::assertSame('route a', $routes[0]->getName());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutPost(): void
     {
-        $this->router->post('/', static function () {
-        });
+        $this->router->post('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutPut(): void
     {
-        $this->router->put('/', static function () {
-        });
+        $this->router->put('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutPatch(): void
     {
-        $this->router->patch('/', static function () {
-        });
+        $this->router->patch('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutDelete(): void
     {
-        $this->router->delete('/', static function () {
-        });
+        $this->router->delete('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutOptions(): void
     {
-        $this->router->options('/', static function () {
-        });
+        $this->router->options('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testShortcutAny(): void
     {
-        $this->router->any('/', static function () {
-        });
+        $this->router->any('/', static function (): void {});
         static::assertCount(1, $this->router->getRoutes());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRoute(): void
     {
-        $this->router->get('/', static function () {
-        });
+        $this->router->get('/', static function (): void {});
         $found = $this->router->findRoute('GET', '/');
         static::assertTrue($found);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRouteWithQSA(): void
     {
-        $this->router->get('/', static function () {
-        });
-        $this->router->post('/', static function () {
-        });
+        $this->router->get('/', static function (): void {});
+        $this->router->post('/', static function (): void {});
         $found = $this->router->findRoute('POST', '/?qsa=asq');
         static::assertTrue($found);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRouteUri(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/azerty?az=9');
 
-        $this->router->get('/azerty', static function () {
-        });
+        $this->router->get('/azerty', static function (): void {});
         $found = $this->router->findRouteRequest($request);
         static::assertTrue($found);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testNotFindRoute(): void
     {
-        $this->router->get('/', static function () {
-        });
+        $this->router->get('/', static function (): void {});
         $found = $this->router->findRoute('GET', '/aze');
         static::assertFalse($found);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindAllCrudRoute(): void
     {
-        $this->router->crud('/posts', static function () {
-        });
+        $this->router->crud('/posts', static function (): void {});
         $found = $this->router->findRoute('GET', '/posts');
         static::assertTrue($found);
         $found = $this->router->findRoute('GET', '/posts/new');
@@ -188,13 +146,10 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRouteWithParameters(): void
     {
-        $this->router->get('/{id}', static function () {
-        });
+        $this->router->get('/{id}', static function (): void {});
         $found = $this->router->findRoute('GET', '/aze');
         static::assertTrue($found);
         $parameters = $this->router->getRouteParameters();
@@ -285,9 +240,7 @@ class RouterTest extends TestCase
         static::assertTrue($found);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testHandleWithClosureMatch(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
@@ -310,9 +263,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testHandleWithMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
@@ -330,9 +281,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testHandleWithString(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
@@ -354,9 +303,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testHandleWithClosureAndAttributeInRequestExtractedFromRoute(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme');
@@ -370,9 +317,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testAddGlobalMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
@@ -406,9 +351,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testAddGlobalMiddlewareAndRouteAddMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/handleme/src/8');
@@ -469,9 +412,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testSetupRouterAndRoutesWithConfigArray(): void
     {
         $config = [
@@ -506,7 +447,7 @@ class RouterTest extends TestCase
         $routes = $this->router->getRoutes();
         static::assertCount(2, $routes);
 
-        $router = new ReflectionClass($this->router);
+        $router = new \ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
         $property->setAccessible(true);
         static::assertSame($config['router']['middlewares'], $property->getValue($this->router));
@@ -530,9 +471,7 @@ class RouterTest extends TestCase
         static::assertSame([], $routes[1]->getParametersConstraints());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testSetupRouterAndRoutesWithConfigArrayNoRouterPart(): void
     {
         $config = [
@@ -557,7 +496,7 @@ class RouterTest extends TestCase
         $routes = $this->router->getRoutes();
         static::assertCount(2, $routes);
 
-        $router = new ReflectionClass($this->router);
+        $router = new \ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
         $property->setAccessible(true);
 
@@ -759,9 +698,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testSetupRouterAndRoutesWithConfigArrayNoRoutesPart(): void
     {
         $config = [];
@@ -771,9 +708,7 @@ class RouterTest extends TestCase
         static::assertCount(0, $routes);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testSetGlobalConstraints(): void
     {
         $request1Found = (new Factory())->createServerRequest('GET', '/article/fr');
@@ -793,9 +728,7 @@ class RouterTest extends TestCase
         static::assertFalse($this->router->findRouteRequest($request2NotFound));
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testGenerateUrl(): void
     {
         $config = [
@@ -853,9 +786,7 @@ class RouterTest extends TestCase
         static::assertNull($urls[5]);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testGenerateUrlWithRouter(): void
     {
         $config = [
@@ -1071,9 +1002,7 @@ class RouterTest extends TestCase
         static::assertTrue($this->router->findRouteRequest($request));
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testSetGlobalHostAndConstraintsAndGetInfoInRequest(): void
     {
         $this->router->setGlobalHostConstraints(['subdomain' => '\d{4}']);
@@ -1098,9 +1027,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testConfigWithHostAndConstraints(): void
     {
         $config = [
@@ -1151,7 +1078,7 @@ class RouterTest extends TestCase
 
         $this->router->setupRouterAndRoutesWithConfigArray($config);
 
-        $router = new ReflectionClass($this->router);
+        $router = new \ReflectionClass($this->router);
         $property = $router->getProperty('currentRoute');
         $property->setAccessible(true);
 
@@ -1188,9 +1115,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testDispatch404(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/');
@@ -1254,9 +1179,7 @@ class RouterTest extends TestCase
         $this->router->dispatch($request);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testDispatch404AfterAllMiddlewarePassed(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/');
@@ -1278,9 +1201,7 @@ class RouterTest extends TestCase
         static::assertSame('404', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testDispatch404Middleware(): void
     {
         $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
@@ -1295,9 +1216,7 @@ class RouterTest extends TestCase
         static::assertSame('404', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testDispatch404StringMiddleware(): void
     {
         $request = (new Factory())->createServerRequest('GET', '/');
@@ -1308,9 +1227,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testDispatch404StringMiddlewareWithConfig(): void
     {
         $config = [
@@ -1328,9 +1245,7 @@ class RouterTest extends TestCase
         static::assertSame('ok', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testRouterceptionRouterInRouteInRouter(): void
     {
         $subRouter1 = new Router();
@@ -1404,9 +1319,7 @@ class RouterTest extends TestCase
         static::assertSame('subRouter2 404', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testRouterception2RouterInMiddleware(): void
     {
         $subRouter1 = new Router();
@@ -1464,13 +1377,10 @@ class RouterTest extends TestCase
         static::assertSame('no match', (string) $response->getBody());
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRouteWithOneOptionalsParameters(): void
     {
-        $this->router->get('/{params}', static function () {
-        })->setOptionalsParameters(['params' => 1]);
+        $this->router->get('/{params}', static function (): void {})->setOptionalsParameters(['params' => 1]);
         $found = $this->router->findRoute('GET', '/aze');
         static::assertTrue($found);
         $parameters = $this->router->getRouteParameters();
@@ -1478,13 +1388,10 @@ class RouterTest extends TestCase
         static::assertSame('aze', $parameters['params']);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRouteWithoutOneOptionalsParameters(): void
     {
-        $this->router->get('/{params}', static function () {
-        })->setOptionalsParameters(['params' => 1]);
+        $this->router->get('/{params}', static function (): void {})->setOptionalsParameters(['params' => 1]);
         $found = $this->router->findRoute('GET', '/');
         static::assertTrue($found);
         $parameters = $this->router->getRouteParameters();
@@ -1492,13 +1399,10 @@ class RouterTest extends TestCase
         static::assertSame(1, $parameters['params']);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testFindRouteWithMultiOptionalsParameters(): void
     {
-        $this->router->get('/{items}/{category}/{offset}/{count}', static function () {
-        })->setOptionalsParameters(
+        $this->router->get('/{items}/{category}/{offset}/{count}', static function (): void {})->setOptionalsParameters(
             ['items' => 1, 'category' => 2, 'offset' => 3, 'count' => 4]
         );
         $found = $this->router->findRoute('GET', '/aze/rty/5/8');
@@ -1566,9 +1470,7 @@ class RouterTest extends TestCase
         $this->router->setupRouterAndRoutesWithConfigArray($config);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function testSetupRouterAndRoutesWithConfigArrayWithOptionalParametersInRoutesPart(): void
     {
         $config = [
