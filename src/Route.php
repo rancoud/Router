@@ -70,9 +70,7 @@ class Route
         $this->methods = $methods;
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     protected function setUrl(string $url): void
     {
         if ($url === '') {
@@ -128,17 +126,13 @@ class Route
         $this->constraints = $constraints;
     }
 
-    /**
-     * @return \Closure|string|Router|null
-     */
+    /** @return \Closure|Router|string|null */
     public function getCallback()
     {
         return $this->callback;
     }
 
-    /**
-     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $middleware
-     */
+    /** @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $middleware */
     public function addMiddleware($middleware): void
     {
         $this->middlewares[] = $middleware;

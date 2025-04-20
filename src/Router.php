@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Rancoud\Router;
 
-use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
-use Psr\Http\Server\{MiddlewareInterface, RequestHandlerInterface};
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Class Router.
@@ -47,7 +49,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -60,7 +62,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -73,7 +75,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -86,7 +88,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -99,7 +101,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -112,7 +114,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -125,7 +127,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -138,7 +140,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @param string|\Closure|MiddlewareInterface|Router $callback
+     * @param \Closure|MiddlewareInterface|Router|string $callback
      *
      * @throws RouterException
      */
@@ -152,9 +154,7 @@ class Router implements RequestHandlerInterface
         $this->delete($prefixPath . '/{id:\d+}', $callback);
     }
 
-    /**
-     * @return Route[]
-     */
+    /** @return Route[] */
     public function getRoutes(): array
     {
         return $this->routes;
@@ -167,7 +167,7 @@ class Router implements RequestHandlerInterface
 
     public function findRouteRequest(ServerRequestInterface $request): bool
     {
-        /* @var $request \Rancoud\Http\Message\ServerRequest */
+        // @var $request \Rancoud\Http\Message\ServerRequest
         $this->method = $request->getMethod();
         $this->url = $request->getUri()->getPath();
         $this->host = null;
@@ -339,9 +339,7 @@ class Router implements RequestHandlerInterface
         return $this->routeParameters;
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
         if ($this->currentRoute === null) {
@@ -365,9 +363,7 @@ class Router implements RequestHandlerInterface
         return $this->handle($request);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     protected function generate404(ServerRequestInterface $request): ResponseInterface
     {
         if ($this->default404 !== null) {
@@ -388,6 +384,7 @@ class Router implements RequestHandlerInterface
 
             throw new RouterException('The default404 is invalid');
         }
+
         throw new RouterException('No route found to dispatch');
     }
 
@@ -399,9 +396,7 @@ class Router implements RequestHandlerInterface
         $this->middlewaresInPipe[] = $this->currentRoute->getCallback();
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         if (!isset($this->middlewaresInPipe[$this->currentMiddlewareInPipeIndex])) {
@@ -433,12 +428,11 @@ class Router implements RequestHandlerInterface
 
             return $this->handle($request);
         }
+
         throw new RouterException(\sprintf('Middleware is invalid: %s', \gettype($middleware)));
     }
 
-    /**
-     * @return \Closure|MiddlewareInterface|Router|string|null
-     */
+    /** @return \Closure|MiddlewareInterface|Router|string|null */
     protected function getMiddlewareInPipe()
     {
         $middleware = null;
@@ -451,9 +445,7 @@ class Router implements RequestHandlerInterface
         return $middleware;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $middleware
-     */
+    /** @param \Closure|MiddlewareInterface|Router|string $middleware */
     public function addGlobalMiddleware($middleware): void
     {
         $this->globalMiddlewares[] = $middleware;
@@ -464,18 +456,14 @@ class Router implements RequestHandlerInterface
         $this->globalMiddlewares = $middlewares;
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     public function setupRouterAndRoutesWithConfigArray(array $config): void
     {
         $this->treatRouterConfig($config);
         $this->treatRoutesConfig($config);
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     protected function treatRouterConfig(array $config): void
     {
         if (!\array_key_exists('router', $config)) {
@@ -523,9 +511,7 @@ class Router implements RequestHandlerInterface
         }
     }
 
-    /**
-     * @throws RouterException
-     */
+    /** @throws RouterException */
     protected function treatRoutesConfig(array $config): void
     {
         if (!\array_key_exists('routes', $config)) {
@@ -632,9 +618,7 @@ class Router implements RequestHandlerInterface
         $this->hostRouter = $host;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|string $callback
-     */
+    /** @param \Closure|MiddlewareInterface|string $callback */
     public function setDefault404($callback): void
     {
         $this->default404 = $callback;
