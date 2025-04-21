@@ -42,8 +42,6 @@ class Route
     {
         if (\is_string($methods)) {
             $methods = [$methods];
-        } elseif (!\is_array($methods)) {
-            throw new RouterException('Method invalid');
         }
 
         foreach ($methods as $method) {
