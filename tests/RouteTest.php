@@ -8,11 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Rancoud\Router\Route;
 use Rancoud\Router\RouterException;
 
-/**
- * Class RouterTest.
- *
- * @internal
- */
+/** @internal */
 class RouteTest extends TestCase
 {
     /** @throws RouterException */
@@ -33,12 +29,6 @@ class RouteTest extends TestCase
     {
         try {
             new Route('', '/', static function (): void {});
-        } catch (RouterException $e) {
-            static::assertInstanceOf(RouterException::class, $e);
-        }
-
-        try {
-            new Route(false, '/', static function (): void {});
         } catch (RouterException $e) {
             static::assertInstanceOf(RouterException::class, $e);
         }

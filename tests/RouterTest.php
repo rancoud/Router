@@ -13,11 +13,7 @@ use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 use Rancoud\Router\RouterException;
 
-/**
- * Class RouterTest.
- *
- * @internal
- */
+/** @internal */
 class RouterTest extends TestCase
 {
     protected Router $router;
@@ -157,9 +153,10 @@ class RouterTest extends TestCase
         static::assertSame('aze', $parameters['id']);
     }
 
+    /** @throws RouterException */
     public function testFindRouteWithParametersAndSimpleRegexOnIt(): void
     {
-        $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
+        $route = new Route('GET', '/articles/{locale}/{year}/{slug}', static function (): void {});
         $route->setName('custom-name');
         $route->setParametersConstraints(['locale' => 'fr|en', 'year' => '\d{4}']);
         $this->router->addRoute($route);
@@ -186,9 +183,10 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
+    /** @throws RouterException */
     public function testFindRouteWithParametersAndSimpleRegexOnItNotFound(): void
     {
-        $route = new Route('GET', '/articles/{locale}/{year}/{slug}', null);
+        $route = new Route('GET', '/articles/{locale}/{year}/{slug}', static function (): void {});
         $route->setParametersConstraints(['locale' => 'fr|en', 'year' => '\d{4}']);
         $this->router->addRoute($route);
 
@@ -199,11 +197,12 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
+    /** @throws RouterException */
     public function testFindRouteWithParametersAndComplexRegexOnIt(): void
     {
         $ipRegex = '\b(?:(?:25[0-5]|2[0-4][0-9]|1?[1-9][0-9]?|10[0-9])(?:(?<!\.)\b|\.))';
         $ipRegex .= '(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:(?<!\.)\b|\.)){3}';
-        $route = new Route('GET', '/articles/{ip}/{locale}/{year}/{slug}', null);
+        $route = new Route('GET', '/articles/{ip}/{locale}/{year}/{slug}', static function (): void {});
         $route->setParametersConstraints([
             'ip'     => $ipRegex,
             'locale' => 'fr|en',
@@ -228,9 +227,10 @@ class RouterTest extends TestCase
         static::assertFalse($found);
     }
 
+    /** @throws RouterException */
     public function testFindRouteWithParametersAndSimpleInlineRegex(): void
     {
-        $route = new Route('GET', '/articles/{locale:fr|jp}/{slug}', null);
+        $route = new Route('GET', '/articles/{locale:fr|jp}/{slug}', static function (): void {});
         $this->router->addRoute($route);
 
         $found = $this->router->findRoute('GET', '/articles/en/myslug');
@@ -449,11 +449,11 @@ class RouterTest extends TestCase
 
         $router = new \ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
-        $property->setAccessible(true);
+
         static::assertSame($config['router']['middlewares'], $property->getValue($this->router));
 
         $property = $router->getProperty('globalConstraints');
-        $property->setAccessible(true);
+
         static::assertSame($config['router']['constraints'], $property->getValue($this->router));
 
         static::assertSame($config['routes'][0]['methods'], $routes[0]->getMethods());
@@ -498,7 +498,6 @@ class RouterTest extends TestCase
 
         $router = new \ReflectionClass($this->router);
         $property = $router->getProperty('globalMiddlewares');
-        $property->setAccessible(true);
 
         static::assertSame([], $property->getValue($this->router));
     }
@@ -846,67 +845,70 @@ class RouterTest extends TestCase
         static::assertNull($urls[5]);
     }
 
+    /** @throws RouterException */
     public function testSetGlobalHostRouter(): void
     {
-        $host = 'api.toto.com';
+        $host = 'api.example.com';
         $this->router->setGlobalHost($host);
-        $route = new Route('GET', '/abc', null);
+        $route = new Route('GET', '/abc', static function (): void {});
         $this->router->addRoute($route);
 
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['SERVER_NAME' => 'api.toto.com'];
+        $serverHost = ['SERVER_NAME' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'backoffice.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
+    /** @throws RouterException */
     public function testSetHost(): void
     {
-        $host = 'api.toto.com';
-        $route = new Route('GET', '/abc', null);
+        $host = 'api.example.com';
+        $route = new Route('GET', '/abc', static function (): void {});
         $route->setHost($host);
         $this->router->addRoute($route);
 
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['SERVER_NAME' => 'api.toto.com'];
+        $serverHost = ['SERVER_NAME' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'backoffice.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
+    /** @throws RouterException */
     public function testSetHostPlaceholder(): void
     {
-        $host = '{subdomain}.toto.com';
-        $route = new Route('GET', '/abc', null);
+        $host = '{subdomain}.example.com';
+        $route = new Route('GET', '/abc', static function (): void {});
         $route->setHost($host);
         $this->router->addRoute($route);
 
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'backoffice.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
@@ -914,57 +916,60 @@ class RouterTest extends TestCase
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'beta.backoffice.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'beta.backoffice.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
+    /** @throws RouterException */
     public function testSetHostPlaceholderInlineConstraints(): void
     {
-        $host = '{subdomain:api|backoffice}.toto.com';
-        $route = new Route('GET', '/abc', null);
+        $host = '{subdomain:api|backoffice}.example.com';
+        $route = new Route('GET', '/abc', static function (): void {});
         $route->setHost($host);
         $this->router->addRoute($route);
 
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'backoffice.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'backoffice.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'beta.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'beta.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
     }
 
+    /** @throws RouterException */
     public function testSetHostAndConstraints(): void
     {
-        $host = '{subdomain}.toto.com';
-        $route = new Route('GET', '/abc', null);
+        $host = '{subdomain}.example.com';
+        $route = new Route('GET', '/abc', static function (): void {});
         $route->setHost($host, ['subdomain' => '\d{4}']);
         $this->router->addRoute($route);
 
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $serverHost = ['HTTP_HOST' => '1990.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
     }
 
+    /** @throws RouterException */
     public function testSetHostAndConstraints2(): void
     {
-        $host = '{subdomain}.toto.com';
-        $route = new Route('GET', '/abc', null);
+        $host = '{subdomain}.example.com';
+        $route = new Route('GET', '/abc', static function (): void {});
         $route->setHost($host);
         $route->setHostConstraints(['subdomain' => '\d{4}']);
         $this->router->addRoute($route);
@@ -972,32 +977,33 @@ class RouterTest extends TestCase
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $serverHost = ['HTTP_HOST' => '1990.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
     }
 
+    /** @throws RouterException */
     public function testSetGlobalHostAndConstraints(): void
     {
         $this->router->setGlobalHostConstraints(['subdomain' => '\d{4}']);
 
-        $host = '{subdomain}.toto.com';
-        $route = new Route('GET', '/abc', null);
+        $host = '{subdomain}.example.com';
+        $route = new Route('GET', '/abc', static function (): void {});
         $route->setHost($host);
         $this->router->addRoute($route);
 
         $request = (new Factory())->createServerRequest('GET', '/abc');
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => 'api.toto.com'];
+        $serverHost = ['HTTP_HOST' => 'api.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertFalse($this->router->findRouteRequest($request));
 
-        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $serverHost = ['HTTP_HOST' => '1990.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
     }
@@ -1013,7 +1019,7 @@ class RouterTest extends TestCase
             static::assertSame('handle', $next[1]);
 
             static::assertSame('1990', $req->getAttribute('subdomain'));
-            static::assertSame('toto', $req->getAttribute('domain'));
+            static::assertSame('example', $req->getAttribute('domain'));
             static::assertSame('com', $req->getAttribute('tld'));
 
             return (new Factory())->createResponse()->withBody(Stream::create('ok'));
@@ -1021,7 +1027,7 @@ class RouterTest extends TestCase
         $route->setHost($host);
         $this->router->addRoute($route);
 
-        $serverHost = ['HTTP_HOST' => '1990.toto.com'];
+        $serverHost = ['HTTP_HOST' => '1990.example.com'];
         $request = new ServerRequest('GET', '/abc', [], null, '1.1', $serverHost);
         static::assertTrue($this->router->findRouteRequest($request));
         $this->router->dispatch($request);
@@ -1080,7 +1086,6 @@ class RouterTest extends TestCase
 
         $router = new \ReflectionClass($this->router);
         $property = $router->getProperty('currentRoute');
-        $property->setAccessible(true);
 
         $serverHost = ['HTTP_HOST' => 'backoffice.2000.com'];
         $request = new ServerRequest('GET', '/common', [], null, '1.1', $serverHost);
@@ -1133,16 +1138,6 @@ class RouterTest extends TestCase
         static::assertSame('404', (string) $response->getBody());
     }
 
-    public function testDispatch404Error(): void
-    {
-        $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('The default404 is invalid');
-
-        $this->router->setDefault404(4545);
-        $request = (new Factory())->createServerRequest('GET', '/');
-        $this->router->dispatch($request);
-    }
-
     public function testDispatch404ErrorStringNoProcessMethod(): void
     {
         $this->expectException(RouterException::class);
@@ -1150,19 +1145,6 @@ class RouterTest extends TestCase
 
         $this->router->setDefault404(InvalidClass::class);
         $request = (new Factory())->createServerRequest('GET', '/');
-        $this->router->dispatch($request);
-    }
-
-    public function testHandleWithClosureNext(): void
-    {
-        $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('No route found to dispatch');
-
-        $request = (new Factory())->createServerRequest('GET', '/');
-        $this->router->get('/', null);
-        $found = $this->router->findRouteRequest($request);
-        static::assertTrue($found);
-
         $this->router->dispatch($request);
     }
 
