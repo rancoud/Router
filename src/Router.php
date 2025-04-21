@@ -9,9 +9,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/**
- * Class Router.
- */
 class Router implements RequestHandlerInterface
 {
     /** @var Route[] */
@@ -41,19 +38,15 @@ class Router implements RequestHandlerInterface
 
     protected array $hostParameters = [];
 
-    protected $default404;
+    protected \Closure|MiddlewareInterface|string|null $default404 = null;
 
     public function addRoute(Route $route): void
     {
         $this->routes[] = $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function get(string $url, $callback): Route
+    /** @throws RouterException */
+    public function get(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['GET', 'HEAD'], $url, $callback);
         $this->addRoute($route);
@@ -61,12 +54,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function post(string $url, $callback): Route
+    /** @throws RouterException */
+    public function post(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['POST'], $url, $callback);
         $this->addRoute($route);
@@ -74,12 +63,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function put(string $url, $callback): Route
+    /** @throws RouterException */
+    public function put(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['PUT'], $url, $callback);
         $this->addRoute($route);
@@ -87,12 +72,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function patch(string $url, $callback): Route
+    /** @throws RouterException */
+    public function patch(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['PATCH'], $url, $callback);
         $this->addRoute($route);
@@ -100,12 +81,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function delete(string $url, $callback): Route
+    /** @throws RouterException */
+    public function delete(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['DELETE'], $url, $callback);
         $this->addRoute($route);
@@ -113,12 +90,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function options(string $url, $callback): Route
+    /** @throws RouterException */
+    public function options(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['OPTIONS'], $url, $callback);
         $this->addRoute($route);
@@ -126,12 +99,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function any(string $url, $callback): Route
+    /** @throws RouterException */
+    public function any(string $url, \Closure|MiddlewareInterface|self|string $callback): Route
     {
         $route = new Route(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $url, $callback);
         $this->addRoute($route);
@@ -139,12 +108,8 @@ class Router implements RequestHandlerInterface
         return $route;
     }
 
-    /**
-     * @param \Closure|MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function crud(string $prefixPath, $callback): void
+    /** @throws RouterException */
+    public function crud(string $prefixPath, \Closure|MiddlewareInterface|self|string $callback): void
     {
         $this->get($prefixPath, $callback);
         $this->get($prefixPath . '/new', $callback);
@@ -167,7 +132,6 @@ class Router implements RequestHandlerInterface
 
     public function findRouteRequest(ServerRequestInterface $request): bool
     {
-        // @var $request \Rancoud\Http\Message\ServerRequest
         $this->method = $request->getMethod();
         $this->url = $request->getUri()->getPath();
         $this->host = null;
@@ -432,8 +396,7 @@ class Router implements RequestHandlerInterface
         throw new RouterException(\sprintf('Middleware is invalid: %s', \gettype($middleware)));
     }
 
-    /** @return \Closure|MiddlewareInterface|Router|string|null */
-    protected function getMiddlewareInPipe()
+    protected function getMiddlewareInPipe(): \Closure|MiddlewareInterface|self|string|null
     {
         $middleware = null;
 
@@ -445,8 +408,7 @@ class Router implements RequestHandlerInterface
         return $middleware;
     }
 
-    /** @param \Closure|MiddlewareInterface|Router|string $middleware */
-    public function addGlobalMiddleware($middleware): void
+    public function addGlobalMiddleware(\Closure|MiddlewareInterface|self|string $middleware): void
     {
         $this->globalMiddlewares[] = $middleware;
     }
@@ -618,8 +580,7 @@ class Router implements RequestHandlerInterface
         $this->hostRouter = $host;
     }
 
-    /** @param \Closure|MiddlewareInterface|string $callback */
-    public function setDefault404($callback): void
+    public function setDefault404(\Closure|MiddlewareInterface|string $callback): void
     {
         $this->default404 = $callback;
     }

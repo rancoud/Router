@@ -6,17 +6,13 @@ namespace Rancoud\Router;
 
 use Rancoud\Http\Message\Request;
 
-/**
- * Class Route.
- */
 class Route
 {
     protected array $methods = [];
 
     protected string $url = '';
 
-    /** @var \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string|null */
-    protected $callback;
+    protected \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $callback;
 
     protected array $constraints = [];
 
@@ -32,15 +28,8 @@ class Route
 
     protected array $optionalsParameters = [];
 
-    /**
-     * Route constructor.
-     *
-     * @param array|string                                                $methods
-     * @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $callback
-     *
-     * @throws RouterException
-     */
-    public function __construct($methods, string $url, $callback)
+    /** @throws RouterException */
+    public function __construct(array|string $methods, string $url, \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $callback)
     {
         $this->setMethods($methods);
         $this->setUrl($url);
@@ -48,12 +37,8 @@ class Route
         $this->callback = $callback;
     }
 
-    /**
-     * @param array|string $methods
-     *
-     * @throws RouterException
-     */
-    protected function setMethods($methods): void
+    /** @throws RouterException */
+    protected function setMethods(array|string $methods): void
     {
         if (\is_string($methods)) {
             $methods = [$methods];
@@ -126,14 +111,12 @@ class Route
         $this->constraints = $constraints;
     }
 
-    /** @return \Closure|Router|string|null */
-    public function getCallback()
+    public function getCallback(): \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string
     {
         return $this->callback;
     }
 
-    /** @param \Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $middleware */
-    public function addMiddleware($middleware): void
+    public function addMiddleware(\Closure|\Psr\Http\Server\MiddlewareInterface|Router|string $middleware): void
     {
         $this->middlewares[] = $middleware;
     }
