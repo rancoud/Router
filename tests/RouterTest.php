@@ -13,7 +13,9 @@ use Rancoud\Router\Route;
 use Rancoud\Router\Router;
 use Rancoud\Router\RouterException;
 
-/** @internal */
+/**
+ * @internal
+ */
 class RouterTest extends TestCase
 {
     protected Router $router;
