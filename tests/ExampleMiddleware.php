@@ -11,7 +11,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Rancoud\Http\Message\Factory\Factory;
 use Rancoud\Http\Message\Stream;
 
-/** @internal */
+/**
+ * @internal
+ */
 class ExampleMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

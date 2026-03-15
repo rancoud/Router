@@ -8,7 +8,9 @@ use PHPUnit\Framework\TestCase;
 use Rancoud\Router\Route;
 use Rancoud\Router\RouterException;
 
-/** @internal */
+/**
+ * @internal
+ */
 class RouteTest extends TestCase
 {
     /** @throws RouterException */
