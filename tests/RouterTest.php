@@ -1191,6 +1191,7 @@ class RouterTest extends TestCase
         $middleware = $this->getMockBuilder(MiddlewareInterface::class)->getMock();
         $response = (new Factory())->createResponse(404)->withBody(Stream::create('404'));
         $middleware->method('process')->willReturn($response);
+        $middleware->expects(static::once())->method('process');
 
         $request = (new Factory())->createServerRequest('GET', '/');
         $this->router->setDefault404($middleware);
