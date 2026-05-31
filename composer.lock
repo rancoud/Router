@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "rancoud/http",
-            "version": "5.0.1",
+            "version": "5.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rancoud/Http.git",
-                "reference": "3a226fff7aa162129ed04d23b8fc27970c8a6940"
+                "reference": "3e71657659da5cb33f6bff76ec65100c0a0b845a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rancoud/Http/zipball/3a226fff7aa162129ed04d23b8fc27970c8a6940",
-                "reference": "3a226fff7aa162129ed04d23b8fc27970c8a6940",
+                "url": "https://api.github.com/repos/rancoud/Http/zipball/3e71657659da5cb33f6bff76ec65100c0a0b845a",
+                "reference": "3e71657659da5cb33f6bff76ec65100c0a0b845a",
                 "shasum": ""
             },
             "require": {
@@ -54,9 +54,9 @@
             "description": "Http package",
             "support": {
                 "issues": "https://github.com/rancoud/Http/issues",
-                "source": "https://github.com/rancoud/Http/tree/5.0.1"
+                "source": "https://github.com/rancoud/Http/tree/5.0.2"
             },
-            "time": "2026-03-15T12:03:51+00:00"
+            "time": "2026-05-31T18:09:17+00:00"
         }
     ],
     "packages-dev": [
