@@ -5,7 +5,6 @@
 [![Packagist Downloads](https://img.shields.io/packagist/dt/rancoud/router)](https://packagist.org/packages/rancoud/router)
 [![Composer dependencies](https://img.shields.io/badge/dependencies-1-brightgreen)](https://github.com/rancoud/router/blob/master/composer.json)
 [![Test workflow](https://img.shields.io/github/actions/workflow/status/rancoud/router/test.yml?branch=master)](https://github.com/rancoud/router/actions/workflows/test.yml)
-[![Codecov](https://img.shields.io/codecov/c/github/rancoud/router?logo=codecov)](https://codecov.io/gh/rancoud/router)
 
 Router PSR7 and PSR15.  
 
